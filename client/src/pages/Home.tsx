@@ -1,0 +1,108 @@
+import { Navigation } from "@/components/Navigation";
+import { Footer } from "@/components/Footer";
+import { Link } from "wouter";
+import { ArrowRight, Clock, ShieldCheck, Ship } from "lucide-react";
+
+export default function Home() {
+  return (
+    <div className="min-h-screen flex flex-col font-sans">
+      <Navigation />
+      
+      {/* Hero Section */}
+      <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0 z-0">
+          {/* Unsplash: Speedboat in Maldives water */}
+          {/* <img src="https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?q=80&w=3270&auto=format&fit=crop" alt="Maldives Speedboat" className="w-full h-full object-cover" /> */}
+          <div 
+            className="w-full h-full bg-cover bg-center" 
+            style={{ 
+              backgroundImage: `url('https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?q=80&w=3270&auto=format&fit=crop')` 
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
+        </div>
+        
+        <div className="relative z-10 container px-4 text-center">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-white mb-6 tracking-tight drop-shadow-lg">
+            Experience the <span className="text-teal-300">Fastest</span><br />
+            Connection to Baa Atoll
+          </h1>
+          <p className="text-lg md:text-xl text-slate-200 max-w-2xl mx-auto mb-10 drop-shadow-md">
+            Premium speedboat ferry service connecting Male' City, Hulhumale' and Baa Atoll islands with comfort and reliability.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link 
+              href="/book" 
+              className="inline-flex items-center justify-center h-14 px-8 rounded-full bg-primary text-white font-semibold text-lg hover:bg-primary/90 transition-all shadow-lg hover:shadow-primary/30"
+            >
+              Book a Seat
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Link>
+            <Link 
+              href="/schedule" 
+              className="inline-flex items-center justify-center h-14 px-8 rounded-full bg-white/20 backdrop-blur-md border border-white/40 text-white font-semibold text-lg hover:bg-white/30 transition-all shadow-lg"
+            >
+              View Schedule
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Features */}
+      <section className="py-24 bg-slate-50">
+        <div className="container px-4">
+          <div className="grid md:grid-cols-3 gap-12">
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
+              <div className="h-14 w-14 bg-blue-100 rounded-xl flex items-center justify-center text-primary mb-6">
+                <Ship className="h-7 w-7" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Modern Fleet</h3>
+              <p className="text-muted-foreground">
+                Our speedboats are equipped with comfortable seating, safety gear, and modern navigation systems for a smooth ride.
+              </p>
+            </div>
+            
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
+              <div className="h-14 w-14 bg-teal-100 rounded-xl flex items-center justify-center text-teal-600 mb-6">
+                <Clock className="h-7 w-7" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Punctual Service</h3>
+              <p className="text-muted-foreground">
+                We value your time. Our schedules are optimized to get you to your destination on time, every time.
+              </p>
+            </div>
+            
+            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-100 hover:-translate-y-1 transition-transform duration-300">
+              <div className="h-14 w-14 bg-amber-100 rounded-xl flex items-center justify-center text-amber-600 mb-6">
+                <ShieldCheck className="h-7 w-7" />
+              </div>
+              <h3 className="text-xl font-bold mb-3">Safe & Secure</h3>
+              <p className="text-muted-foreground">
+                Safety is our priority. Experienced captains and crew ensure your journey across the ocean is safe.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 bg-primary text-white">
+        <div className="container px-4 text-center">
+          <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">Ready to travel?</h2>
+          <p className="text-blue-100 text-lg mb-10 max-w-2xl mx-auto">
+            Book your seat online in less than 2 minutes. Receive your e-ticket instantly and pay on delivery.
+          </p>
+          <Link 
+            href="/book" 
+            className="inline-flex items-center justify-center h-14 px-10 rounded-full bg-white text-primary font-bold text-lg hover:bg-blue-50 transition-all shadow-xl"
+          >
+            Book Now
+          </Link>
+        </div>
+      </section>
+
+      <Footer />
+    </div>
+  );
+}
