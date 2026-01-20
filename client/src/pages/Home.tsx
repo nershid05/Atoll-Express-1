@@ -3,6 +3,8 @@ import { Footer } from "@/components/Footer";
 import { Link } from "wouter";
 import { ArrowRight, Clock, ShieldCheck, Ship } from "lucide-react";
 
+import heroImg from "@assets/WhatsApp_Image_2026-01-21_at_03.57.08_1768949857607.jpeg";
+
 export default function Home() {
   return (
     <div className="min-h-screen flex flex-col font-sans">
@@ -12,12 +14,10 @@ export default function Home() {
       <section className="relative h-[80vh] flex items-center justify-center overflow-hidden">
         {/* Background Image with Overlay */}
         <div className="absolute inset-0 z-0">
-          {/* Unsplash: Speedboat in Maldives water */}
-          {/* <img src="https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?q=80&w=3270&auto=format&fit=crop" alt="Maldives Speedboat" className="w-full h-full object-cover" /> */}
           <div 
             className="w-full h-full bg-cover bg-center" 
             style={{ 
-              backgroundImage: `url('https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?q=80&w=3270&auto=format&fit=crop')` 
+              backgroundImage: `url(${heroImg})` 
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-black/20" />
