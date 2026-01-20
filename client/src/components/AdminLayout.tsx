@@ -23,7 +23,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   useEffect(() => {
     if (!isLoading && !user) {
-      window.location.href = "/api/login";
+      window.location.href = "/admin/login";
     }
   }, [user, isLoading]);
 
