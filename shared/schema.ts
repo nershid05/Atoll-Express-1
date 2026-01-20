@@ -34,6 +34,8 @@ export const bookings = pgTable("bookings", {
   totalPrice: integer("total_price").notNull(),
   bookingStatus: text("booking_status").default("confirmed"), // confirmed, cancelled
   paymentStatus: text("payment_status").default("pending"), // pending (pay on delivery), paid
+  paymentMethod: text("payment_method").default("cash"), // cash, bank_transfer
+  paymentSlipUrl: text("payment_slip_url"),
   ticketCode: text("ticket_code").notNull().unique(),
   createdAt: timestamp("created_at").defaultNow(),
 });
