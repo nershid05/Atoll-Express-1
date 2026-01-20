@@ -25,7 +25,7 @@ export default function Home() {
         
         <div className="relative z-10 container px-4 text-center">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-white mb-6 tracking-tight drop-shadow-lg">
-            Experience the <span className="text-teal-300">Fastest</span><br />
+            Experience the <span className="text-primary">Fastest</span><br />
             Connection to Baa Atoll
           </h1>
           <p className="text-lg md:text-xl text-slate-200 max-w-2xl mx-auto mb-10 drop-shadow-md">
