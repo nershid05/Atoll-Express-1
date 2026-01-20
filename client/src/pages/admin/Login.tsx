@@ -1,7 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Anchor, Lock } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Link } from "wouter";
+import logoImg from "@assets/67479162_2414021002167097_5524966927945957376_n_1768948773017.jpg";
 
 export default function AdminLogin() {
   return (
@@ -9,11 +10,9 @@ export default function AdminLogin() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-1">
           <div className="flex justify-center mb-4">
-            <div className="p-3 rounded-full bg-primary/10 text-primary">
-              <Anchor className="h-8 w-8" />
-            </div>
+            <img src={logoImg} alt="Yoosufspeed Logo" className="h-16 w-auto" />
           </div>
-          <CardTitle className="text-2xl font-display font-bold">Admin Portal</CardTitle>
+          <CardTitle className="text-2xl font-display font-bold">Yoosufspeed Admin</CardTitle>
           <p className="text-sm text-muted-foreground">
             Access protected management features
           </p>

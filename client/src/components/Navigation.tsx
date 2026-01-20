@@ -4,6 +4,8 @@ import { Menu, X, Anchor, LayoutDashboard, LogOut } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
+import logoImg from "@assets/67479162_2414021002167097_5524966927945957376_n_1768948773017.jpg";
+
 export function Navigation() {
   const [location] = useLocation();
   const { user, logout } = useAuth();
@@ -21,8 +23,8 @@ export function Navigation() {
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container flex h-16 items-center px-4">
         <Link href="/" className="mr-6 flex items-center gap-2 font-display text-2xl font-bold text-primary">
-          <Anchor className="h-6 w-6" />
-          <span>YoosuSpeed</span>
+          <img src={logoImg} alt="Yoosufspeed Logo" className="h-8 w-auto" />
+          <span>Yoosufspeed</span>
         </Link>
         
         {/* Desktop Nav */}

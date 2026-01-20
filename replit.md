@@ -1,8 +1,8 @@
-# YoosuSpeed Ferry Booking System
+# Yoosufspeed Ferry Booking System
 
 ## Overview
 
-YoosuSpeed is a ferry booking web application for speedboat services connecting Male' City, Hulhumale', and Baa Atoll in the Maldives. The system provides public-facing pages for viewing schedules, booking tickets, and submitting testimonials, along with an admin dashboard for managing trips, bookings, testimonials, and contact messages.
+Yoosufspeed is a ferry booking web application for speedboat services connecting Male' City, Hulhumale', and Baa Atoll in the Maldives. The system provides public-facing pages for viewing schedules, booking tickets, and submitting testimonials, along with an admin dashboard for managing trips, bookings, testimonials, and contact messages.
 
 ## User Preferences
 
