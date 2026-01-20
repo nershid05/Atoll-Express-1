@@ -42,7 +42,7 @@ export function Navigation() {
         </div>
 
         <div className="ml-auto flex items-center gap-4">
-          {user ? (
+          {user && (
             <div className="hidden md:flex items-center gap-4">
               <Link href="/admin/dashboard" className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary">
                 <LayoutDashboard className="h-4 w-4" />
@@ -56,14 +56,6 @@ export function Navigation() {
                 Logout
               </button>
             </div>
-          ) : (
-             // Hidden on mobile to keep clean, or can be added to menu
-            <Link 
-              href="/api/login"
-              className="hidden md:inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              Admin Login
-            </Link>
           )}
 
           {/* Mobile Menu Button */}
@@ -93,7 +85,7 @@ export function Navigation() {
                 {link.label}
               </Link>
             ))}
-            {user ? (
+            {user && (
               <>
                  <Link href="/admin/dashboard" onClick={() => setIsOpen(false)} className="text-base font-medium text-foreground">
                     Dashboard
@@ -102,10 +94,6 @@ export function Navigation() {
                    Logout
                  </button>
               </>
-            ) : (
-              <Link href="/api/login" className="text-base font-medium text-primary">
-                Admin Login
-              </Link>
             )}
           </div>
         </div>

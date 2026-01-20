@@ -15,6 +15,7 @@ import Contact from "@/pages/Contact";
 
 // Admin Pages
 import Dashboard from "@/pages/admin/Dashboard";
+import AdminLogin from "@/pages/admin/Login";
 import AdminTrips from "@/pages/admin/Trips";
 import AdminBookings from "@/pages/admin/Bookings";
 import AdminTestimonials from "@/pages/admin/Testimonials";
@@ -32,6 +33,7 @@ function Router() {
       <Route path="/contact" component={Contact} />
 
       {/* Admin Routes - Protected by AdminLayout component inside */}
+      <Route path="/admin/login" component={AdminLogin} />
       <Route path="/admin/dashboard" component={Dashboard} />
       <Route path="/admin/trips" component={AdminTrips} />
       <Route path="/admin/bookings" component={AdminBookings} />
