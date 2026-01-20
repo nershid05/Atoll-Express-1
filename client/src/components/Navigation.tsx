@@ -22,15 +22,12 @@ export function Navigation() {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border/40 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/60">
       <div className="container flex h-16 items-center px-4">
-        <Link href="/" className="mr-6 flex items-center gap-3 font-display text-2xl font-bold text-primary">
-          <div className="h-10 w-10 overflow-hidden rounded-sm bg-white flex items-center justify-center">
-            <img 
-              src={logoImg} 
-              alt="Yoosufspeed Logo" 
-              className="h-20 w-auto object-cover max-w-none translate-y-[-2px]" 
-            />
-          </div>
-          <span>Yoosufspeed</span>
+        <Link href="/" className="mr-6 flex items-center gap-3">
+          <img 
+            src={logoImg} 
+            alt="Yoosufspeed Logo" 
+            className="h-10 w-auto object-contain" 
+          />
         </Link>
         
         {/* Desktop Nav */}

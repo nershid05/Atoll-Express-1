@@ -10,15 +10,13 @@ export default function AdminLogin() {
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center space-y-1">
           <div className="flex justify-center mb-4">
-            <div className="h-20 w-20 overflow-hidden rounded-md bg-white border border-primary/10 flex items-center justify-center shadow-sm">
-              <img 
-                src={logoImg} 
-                alt="Yoosufspeed Logo" 
-                className="h-40 w-auto object-cover max-w-none translate-y-[-4px]" 
-              />
-            </div>
+            <img 
+              src={logoImg} 
+              alt="Yoosufspeed Logo" 
+              className="h-32 w-auto object-contain" 
+            />
           </div>
-          <CardTitle className="text-2xl font-display font-bold">Yoosufspeed Admin</CardTitle>
+          <CardTitle className="text-2xl font-display font-bold text-primary">Admin Portal</CardTitle>
           <p className="text-sm text-muted-foreground">
             Access protected management features
           </p>
