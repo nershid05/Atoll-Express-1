@@ -4,7 +4,7 @@ import { useRoute } from "wouter";
 import { Loader2, Printer, MapPin, Calendar, CreditCard, Anchor, CheckCircle, Ship } from "lucide-react";
 import { Button } from "@/components/ui/button"; // Assuming UI component exists, or use standard
 import { format } from "date-fns";
-import logoImg from "@assets/67479162_2414021002167097_5524966927945957376_n_1768948773017.jpg";
+import logoImg from "@assets/67479162_2414021002167097_5524966927945957376_n_1768950438961.jpg";
 
 export default function Ticket() {
   const [, params] = useRoute("/ticket/:id");
@@ -40,9 +40,9 @@ export default function Ticket() {
           {/* Header */}
           <div className="bg-primary p-6 text-white text-center print:bg-white print:text-slate-900 print:border-b">
             <div className="flex justify-center mb-3">
-              <img src={logoImg} alt="Yoosufspeed Logo" className="h-12 w-auto brightness-0 invert print:brightness-100 print:invert-0" />
+              <img src={logoImg} alt="Yoosufspeed Logo" className="h-16 w-auto object-contain brightness-0 invert print:brightness-100 print:invert-0" />
             </div>
-            <h1 className="font-display text-2xl font-bold">Yoosufspeed E-Ticket</h1>
+            <h1 className="sr-only">Yoosufspeed E-Ticket</h1>
             <p className="text-blue-100 text-sm opacity-80 print:text-slate-500">Booking Confirmed</p>
           </div>
 
