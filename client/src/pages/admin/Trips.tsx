@@ -22,6 +22,15 @@ const tripSchema = z.object({
 
 type TripFormValues = z.infer<typeof tripSchema>;
 
+const boatNames = [
+  "Yoosuf Rasgefaanu",
+  "Yoosuf Emperor",
+  "Yoosuf Empire",
+  "Yoosuf Explorer",
+  "Yoosuf Eros",
+  "Yoosuf Empower"
+];
+
 export default function AdminTrips() {
   const { data: trips, isLoading } = useTrips();
   const { mutateAsync: createTrip } = useCreateTrip();
@@ -179,7 +188,15 @@ export default function AdminTrips() {
 
               <div className="space-y-2">
                 <label className="text-sm font-medium">Boat Name</label>
-                <input {...form.register("boatName")} className="w-full p-2 border rounded-md" placeholder="Speed Star 1" />
+                <select 
+                  {...form.register("boatName")} 
+                  className="w-full p-2 border rounded-md bg-white"
+                >
+                  <option value="">Select a boat</option>
+                  {boatNames.map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                </select>
               </div>
 
               <div className="flex items-center gap-2">
