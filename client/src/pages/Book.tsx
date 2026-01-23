@@ -17,6 +17,8 @@ const bookingFormSchema = z.object({
   customerEmail: z.string().email("Invalid email"),
   customerPhone: z.string().min(7, "Valid phone number required"),
   ticketQuantity: z.coerce.number().min(1, "At least 1 ticket").max(10, "Max 10 tickets"),
+  paymentMethod: z.enum(["cash", "bank_transfer"]).default("cash"),
+  paymentSlip: z.string().optional(),
 });
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
@@ -35,19 +37,34 @@ export default function Book() {
     defaultValues: {
       tripId: preSelectedTripId ? Number(preSelectedTripId) : undefined,
       ticketQuantity: 1,
+      paymentMethod: "cash",
     }
   });
 
   const selectedTripId = form.watch("tripId");
+  const paymentMethod = form.watch("paymentMethod");
   const selectedTrip = trips?.find(t => t.id === selectedTripId);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        form.setValue("paymentSlip", reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const onSubmit = async (data: BookingFormValues) => {
     try {
+      const { paymentSlip, ...rest } = data;
       const result = await createBooking({
-        ...data,
+        ...rest,
+        paymentSlipUrl: paymentSlip,
         totalPrice: 0, // Backend calculates
         bookingStatus: "confirmed",
-        paymentStatus: "pending"
+        paymentStatus: paymentMethod === "cash" ? "pending" : "pending"
       });
       // Redirect to ticket view
       setLocation(`/ticket/${result.id}`);
@@ -157,9 +174,61 @@ export default function Book() {
                     </select>
                   </div>
 
+                  {/* Payment Method */}
+                  <div className="space-y-4 pt-4 border-t">
+                    <h3 className="font-semibold text-slate-900">Payment Method</h3>
+                    <div className="grid grid-cols-2 gap-4">
+                      <label className={cn(
+                        "flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all",
+                        paymentMethod === "cash" ? "border-primary bg-primary/5" : "border-slate-100 hover:border-slate-200"
+                      )}>
+                        <input {...form.register("paymentMethod")} type="radio" value="cash" className="sr-only" />
+                        <span className="font-bold text-sm">Cash on Board</span>
+                        <span className="text-xs text-muted-foreground">Pay when boarding</span>
+                      </label>
+                      <label className={cn(
+                        "flex flex-col items-center justify-center p-4 rounded-xl border-2 cursor-pointer transition-all",
+                        paymentMethod === "bank_transfer" ? "border-primary bg-primary/5" : "border-slate-100 hover:border-slate-200"
+                      )}>
+                        <input {...form.register("paymentMethod")} type="radio" value="bank_transfer" className="sr-only" />
+                        <span className="font-bold text-sm">Bank Transfer</span>
+                        <span className="text-xs text-muted-foreground">Transfer & Upload slip</span>
+                      </label>
+                    </div>
+
+                    {paymentMethod === "bank_transfer" && (
+                      <div className="space-y-4 p-4 rounded-xl bg-slate-50 border border-slate-200 animate-in fade-in duration-300">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <p className="text-xs font-bold uppercase text-slate-500">Bank of Maldives (BML)</p>
+                            <p className="text-sm font-mono font-bold">7730000123456</p>
+                            <p className="text-[10px] text-slate-400 italic">Account Name: Yoosufspeed</p>
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs font-bold uppercase text-slate-500">MIB</p>
+                            <p className="text-sm font-mono font-bold">9010111222333</p>
+                            <p className="text-[10px] text-slate-400 italic">Account Name: Yoosufspeed</p>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium text-slate-700">Upload Payment Slip</label>
+                          <input 
+                            type="file" 
+                            accept="image/*,.pdf" 
+                            onChange={handleFileUpload}
+                            className="w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                          />
+                          {!form.watch("paymentSlip") && (
+                            <p className="text-[10px] text-destructive italic">Required for bank transfer</p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
                   <button 
                     type="submit"
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || (paymentMethod === "bank_transfer" && !form.watch("paymentSlip"))}
                     className="w-full py-4 bg-primary text-white rounded-xl font-bold text-lg shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (
