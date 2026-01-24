@@ -11,6 +11,7 @@ export const trips = pgTable("trips", {
   id: serial("id").primaryKey(),
   routeFrom: text("route_from").notNull(),
   routeTo: text("route_to").notNull(),
+  departureDate: text("departure_date").notNull(), // YYYY-MM-DD format
   departureTime: text("departure_time").notNull(), // HH:MM format
   arrivalTime: text("arrival_time").notNull(), // HH:MM format
   price: integer("price").notNull(), // In MVR

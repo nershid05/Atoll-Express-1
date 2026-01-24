@@ -12,6 +12,7 @@ import { type Trip } from "@shared/schema";
 const tripSchema = z.object({
   routeFrom: z.string().min(1, "Origin required"),
   routeTo: z.string().min(1, "Destination required"),
+  departureDate: z.string().min(1, "Date required"),
   departureTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "HH:MM format"),
   arrivalTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "HH:MM format"),
   price: z.coerce.number().min(1),
@@ -94,6 +95,7 @@ export default function AdminTrips() {
         <table className="w-full text-left border-collapse">
           <thead className="bg-slate-50 border-b border-slate-200">
             <tr>
+              <th className="p-4 font-semibold text-slate-700">Date</th>
               <th className="p-4 font-semibold text-slate-700">Route</th>
               <th className="p-4 font-semibold text-slate-700">Time</th>
               <th className="p-4 font-semibold text-slate-700">Boat</th>
@@ -105,6 +107,9 @@ export default function AdminTrips() {
           <tbody className="divide-y divide-slate-100">
             {trips?.map((trip) => (
               <tr key={trip.id} className="hover:bg-slate-50/50">
+                <td className="p-4">
+                  <div className="text-sm font-medium text-slate-600">{trip.departureDate}</div>
+                </td>
                 <td className="p-4">
                   <div className="font-medium text-slate-900">{trip.routeFrom} → {trip.routeTo}</div>
                 </td>
@@ -153,6 +158,11 @@ export default function AdminTrips() {
             </div>
             
             <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Departure Date</label>
+                <input {...form.register("departureDate")} type="date" className="w-full p-2 border rounded-md" />
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">From</label>

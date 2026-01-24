@@ -107,7 +107,7 @@ export default function Book() {
                       <option value="">-- Select a route --</option>
                       {trips?.filter(t => t.isActive).map(trip => (
                         <option key={trip.id} value={trip.id}>
-                          {trip.routeFrom} → {trip.routeTo} ({trip.departureTime})
+                          {trip.departureDate} | {trip.routeFrom} → {trip.routeTo} ({trip.departureTime})
                         </option>
                       ))}
                     </select>
@@ -261,6 +261,11 @@ export default function Book() {
                         <div className="h-2 w-2 rounded-full bg-secondary" />
                         {selectedTrip.routeTo}
                       </div>
+                    </div>
+
+                    <div className="flex justify-between items-center py-2 border-b border-dashed">
+                      <span className="text-sm text-muted-foreground">Date</span>
+                      <span className="font-medium">{selectedTrip.departureDate}</span>
                     </div>
 
                     <div className="flex justify-between items-center py-2 border-b border-dashed">
