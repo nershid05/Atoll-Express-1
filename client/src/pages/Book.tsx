@@ -8,10 +8,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { ArrowRight, Loader2, MapPin, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 // Schema for the form
 const bookingFormSchema = z.object({
+  date: z.string().min(1, "Please select a date"),
   tripId: z.coerce.number().min(1, "Please select a trip"),
   customerName: z.string().min(2, "Name is required"),
   customerEmail: z.string().email("Invalid email"),
@@ -35,15 +36,26 @@ export default function Book() {
   const form = useForm<BookingFormValues>({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
+      date: new Date().toISOString().split('T')[0],
       tripId: preSelectedTripId ? Number(preSelectedTripId) : undefined,
       ticketQuantity: 1,
       paymentMethod: "cash",
     }
   });
 
+  const selectedDate = form.watch("date");
   const selectedTripId = form.watch("tripId");
   const paymentMethod = form.watch("paymentMethod");
+  
+  const filteredTrips = trips?.filter(t => t.isActive && t.departureDate === selectedDate) || [];
   const selectedTrip = trips?.find(t => t.id === selectedTripId);
+
+  // Reset trip selection if date changes and current trip is not available
+  useEffect(() => {
+    if (selectedTripId && !filteredTrips.some(t => t.id === selectedTripId)) {
+      form.setValue("tripId", 0);
+    }
+  }, [selectedDate, filteredTrips, selectedTripId, form]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -96,6 +108,20 @@ export default function Book() {
             <div className="md:col-span-2 space-y-6">
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  {/* Date Selection */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Select Date</label>
+                    <input 
+                      type="date"
+                      {...form.register("date")}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    />
+                    {form.formState.errors.date && (
+                      <p className="text-sm text-destructive">{form.formState.errors.date.message}</p>
+                    )}
+                  </div>
+
                   {/* Trip Selection */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">Select Trip</label>
@@ -103,10 +129,10 @@ export default function Book() {
                       {...form.register("tripId")}
                       className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     >
-                      <option value="">-- Select a route --</option>
-                      {trips?.filter(t => t.isActive).map(trip => (
+                      <option value="">-- {filteredTrips.length > 0 ? "Select a route" : "No trips available for this date"} --</option>
+                      {filteredTrips.map(trip => (
                         <option key={trip.id} value={trip.id}>
-                          {trip.departureDate} | {trip.routeFrom} → {trip.routeTo} ({trip.departureTime})
+                          {trip.routeFrom} → {trip.routeTo} ({trip.departureTime})
                         </option>
                       ))}
                     </select>
