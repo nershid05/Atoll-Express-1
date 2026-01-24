@@ -62,7 +62,6 @@ export default function Book() {
       const result = await createBooking({
         ...rest,
         paymentSlipUrl: paymentSlip,
-        totalPrice: 0, // Backend calculates
         bookingStatus: "confirmed",
         paymentStatus: paymentMethod === "cash" ? "pending" : "pending"
       });

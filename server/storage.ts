@@ -55,7 +55,10 @@ export class DatabaseStorage implements IStorage {
     return trip;
   }
   async createTrip(trip: InsertTrip): Promise<Trip> {
-    const [newTrip] = await db.insert(trips).values(trip).returning();
+    const [newTrip] = await db.insert(trips).values({
+      ...trip,
+      departureDate: trip.departureDate || new Date().toISOString().split('T')[0]
+    }).returning();
     return newTrip;
   }
   async updateTrip(id: number, updates: Partial<InsertTrip>): Promise<Trip> {
