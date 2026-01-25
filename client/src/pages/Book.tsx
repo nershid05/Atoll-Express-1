@@ -47,7 +47,21 @@ export default function Book() {
   const selectedTripId = Number(form.watch("tripId"));
   const paymentMethod = form.watch("paymentMethod");
   
-  const filteredTrips = trips?.filter(t => t.isActive && t.departureDate === selectedDate) || [];
+  const filteredTrips = trips?.filter(t => {
+    if (!t.isActive || t.departureDate !== selectedDate) return false;
+    
+    // Filter out past trips for today
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    if (selectedDate === today) {
+      const [hours, minutes] = t.departureTime.split(':').map(Number);
+      const tripTime = new Date();
+      tripTime.setHours(hours, minutes, 0, 0);
+      return tripTime > now;
+    }
+    
+    return true;
+  }) || [];
   const selectedTrip = trips?.find(t => t.id === selectedTripId);
 
   // Reset trip selection if date changes and current trip is not available
@@ -129,12 +143,22 @@ export default function Book() {
                       {...form.register("tripId")}
                       className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     >
-                      <option value="0">-- {filteredTrips.length > 0 ? "Select a route" : "No trips available for this date"} --</option>
-                      {filteredTrips.map(trip => (
-                        <option key={trip.id} value={trip.id.toString()}>
-                          {trip.routeFrom} → {trip.routeTo} ({trip.departureTime})
+                      {filteredTrips.length > 0 ? (
+                        <>
+                          <option value="0">-- Select a route --</option>
+                          {filteredTrips.map(trip => (
+                            <option key={trip.id} value={trip.id.toString()}>
+                              {trip.routeFrom} → {trip.routeTo} ({trip.departureTime})
+                            </option>
+                          ))}
+                        </>
+                      ) : (
+                        <option value="0">
+                          {selectedDate === new Date().toISOString().split('T')[0] 
+                            ? "Planned trips for today ended" 
+                            : "No trips available for this date"}
                         </option>
-                      ))}
+                      )}
                     </select>
                     {form.formState.errors.tripId && (
                       <p className="text-sm text-destructive">{form.formState.errors.tripId.message}</p>
