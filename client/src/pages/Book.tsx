@@ -44,7 +44,7 @@ export default function Book() {
   });
 
   const selectedDate = form.watch("date");
-  const selectedTripId = form.watch("tripId");
+  const selectedTripId = Number(form.watch("tripId"));
   const paymentMethod = form.watch("paymentMethod");
   
   const filteredTrips = trips?.filter(t => t.isActive && t.departureDate === selectedDate) || [];
@@ -129,9 +129,9 @@ export default function Book() {
                       {...form.register("tripId")}
                       className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     >
-                      <option value="">-- {filteredTrips.length > 0 ? "Select a route" : "No trips available for this date"} --</option>
+                      <option value="0">-- {filteredTrips.length > 0 ? "Select a route" : "No trips available for this date"} --</option>
                       {filteredTrips.map(trip => (
-                        <option key={trip.id} value={trip.id}>
+                        <option key={trip.id} value={trip.id.toString()}>
                           {trip.routeFrom} → {trip.routeTo} ({trip.departureTime})
                         </option>
                       ))}
