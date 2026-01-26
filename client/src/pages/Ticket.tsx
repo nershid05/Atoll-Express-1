@@ -1,20 +1,37 @@
 import { useBooking } from "@/hooks/use-bookings";
 import { useTrip } from "@/hooks/use-trips";
 import { useRoute } from "wouter";
-import { Loader2, Printer, MapPin, Calendar, CreditCard, Anchor, CheckCircle, Ship } from "lucide-react";
+import { Loader2, Printer, MapPin, Calendar, CreditCard, Anchor, CheckCircle, Ship, Download } from "lucide-react";
 import { Button } from "@/components/ui/button"; // Assuming UI component exists, or use standard
 import { format } from "date-fns";
+import html2canvas from "html2canvas";
+import { useRef } from "react";
 import logoImg from "@assets/67479162_2414021002167097_5524966927945957376_n_1768950438961.jpg";
 
 export default function Ticket() {
   const [, params] = useRoute("/ticket/:id");
   const bookingId = Number(params?.id);
+  const ticketRef = useRef<HTMLDivElement>(null);
   
   const { data: booking, isLoading: bookingLoading } = useBooking(bookingId);
   // We need to fetch trip details separately based on booking.tripId
   const { data: trip, isLoading: tripLoading } = useTrip(booking?.tripId || 0);
 
   const isLoading = bookingLoading || tripLoading;
+
+  const handleDownload = async () => {
+    if (ticketRef.current) {
+      const canvas = await html2canvas(ticketRef.current, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#f1f5f9"
+      });
+      const link = document.createElement('a');
+      link.download = `Yoosufspeed-Ticket-${booking?.ticketCode}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    }
+  };
 
   if (isLoading) {
     return (
@@ -36,7 +53,7 @@ export default function Ticket() {
     <div className="min-h-screen bg-slate-100 py-12 px-4 print:bg-white print:p-0">
       <div className="max-w-md mx-auto print:max-w-none print:w-full">
         {/* Ticket Card */}
-        <div className="bg-white rounded-3xl shadow-xl overflow-hidden print:shadow-none print:border print:border-slate-300">
+        <div ref={ticketRef} className="bg-white rounded-3xl shadow-xl overflow-hidden print:shadow-none print:border print:border-slate-300">
           {/* Header */}
           <div className="bg-primary p-6 text-white text-center print:bg-white print:text-slate-900 print:border-b">
             <div className="flex justify-center mb-3">
@@ -113,17 +130,24 @@ export default function Ticket() {
         </div>
 
         {/* Action Buttons (Hidden in Print) */}
-        <div className="mt-8 flex justify-center gap-4 no-print">
+        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4 no-print">
+          <button 
+            onClick={handleDownload}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-semibold shadow-lg hover:bg-primary/90 transition-colors"
+          >
+            <Download className="h-4 w-4" />
+            Save to Device
+          </button>
           <button 
             onClick={() => window.print()}
-            className="flex items-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-semibold shadow-lg hover:bg-slate-800 transition-colors"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-900 text-white rounded-full font-semibold shadow-lg hover:bg-slate-800 transition-colors"
           >
             <Printer className="h-4 w-4" />
             Print Ticket
           </button>
           <button 
             onClick={() => window.location.href = '/'}
-            className="flex items-center gap-2 px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-full font-semibold shadow-sm hover:bg-slate-50 transition-colors"
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-white text-slate-700 border border-slate-200 rounded-full font-semibold shadow-sm hover:bg-slate-50 transition-colors"
           >
             Back Home
           </button>
