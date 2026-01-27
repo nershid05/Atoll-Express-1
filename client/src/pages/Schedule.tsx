@@ -2,7 +2,7 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { useTrips } from "@/hooks/use-trips";
 import { Link } from "wouter";
-import { ArrowRight, Loader2, MapPin } from "lucide-react";
+import { ArrowRight, Loader2, MapPin, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function Schedule() {
