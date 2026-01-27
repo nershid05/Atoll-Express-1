@@ -25,13 +25,35 @@ export default function Schedule() {
             <div className="flex justify-center py-20">
               <Loader2 className="h-10 w-10 animate-spin text-primary" />
             </div>
-          ) : trips?.length === 0 ? (
+          ) : trips?.filter(t => {
+            const now = new Date();
+            const today = now.toISOString().split('T')[0];
+            if (t.departureDate < today) return false;
+            if (t.departureDate === today) {
+              const [hours, minutes] = t.departureTime.split(':').map(Number);
+              const tripTime = new Date();
+              tripTime.setHours(hours, minutes, 0, 0);
+              return tripTime > now;
+            }
+            return true;
+          }).length === 0 ? (
             <div className="text-center py-20 bg-white rounded-2xl shadow-sm border">
-              <p className="text-xl text-muted-foreground">No trips scheduled at the moment.</p>
+              <p className="text-xl text-muted-foreground">No upcoming trips scheduled at the moment.</p>
             </div>
           ) : (
             <div className="grid gap-6">
-              {trips?.map((trip) => (
+              {trips?.filter(t => {
+                const now = new Date();
+                const today = now.toISOString().split('T')[0];
+                if (t.departureDate < today) return false;
+                if (t.departureDate === today) {
+                  const [hours, minutes] = t.departureTime.split(':').map(Number);
+                  const tripTime = new Date();
+                  tripTime.setHours(hours, minutes, 0, 0);
+                  return tripTime > now;
+                }
+                return true;
+              }).map((trip) => (
                 <div 
                   key={trip.id} 
                   className={cn(
@@ -42,6 +64,10 @@ export default function Schedule() {
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     {/* Route Info */}
                     <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1 text-xs font-bold text-primary uppercase tracking-wider">
+                        <Calendar className="h-3.5 w-3.5" />
+                        {trip.departureDate}
+                      </div>
                       <div className="flex items-center gap-3 mb-2">
                         <div className="flex items-center gap-2 text-slate-900 font-bold text-lg">
                           <MapPin className="h-5 w-5 text-primary" />

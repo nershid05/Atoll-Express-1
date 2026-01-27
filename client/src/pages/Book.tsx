@@ -50,9 +50,13 @@ export default function Book() {
   const filteredTrips = trips?.filter(t => {
     if (!t.isActive || t.departureDate !== selectedDate) return false;
     
-    // Filter out past trips for today
     const now = new Date();
     const today = now.toISOString().split('T')[0];
+    
+    // Prevent past dates entirely if someone tries to hack the input
+    if (selectedDate < today) return false;
+    
+    // Filter out past trips for today
     if (selectedDate === today) {
       const [hours, minutes] = t.departureTime.split(':').map(Number);
       const tripTime = new Date();
