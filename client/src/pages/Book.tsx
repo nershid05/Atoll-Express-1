@@ -24,6 +24,8 @@ const bookingFormSchema = z.object({
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
 
+const islands = ["Eydhafushi", "Kudarikilu", "Kendhoo", "Maalhos"];
+
 export default function Book() {
   const [location, setLocation] = useLocation();
   const searchString = useSearch();
@@ -46,9 +48,15 @@ export default function Book() {
   const selectedDate = form.watch("date");
   const selectedTripId = Number(form.watch("tripId"));
   const paymentMethod = form.watch("paymentMethod");
+  const routeFrom = form.watch("routeFrom" as any);
+  const routeTo = form.watch("routeTo" as any);
   
   const filteredTrips = trips?.filter(t => {
     if (!t.isActive || t.departureDate !== selectedDate) return false;
+    
+    // Island-specific route logic
+    if (routeFrom && t.routeFrom !== routeFrom) return false;
+    if (routeTo && t.routeTo !== routeTo) return false;
     
     const now = new Date();
     const today = now.toISOString().split('T')[0];
@@ -138,6 +146,36 @@ export default function Book() {
                     {form.formState.errors.date && (
                       <p className="text-sm text-destructive">{form.formState.errors.date.message}</p>
                     )}
+                  </div>
+
+                  {/* Route Selection */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700">From</label>
+                      <select 
+                        {...form.register("routeFrom" as any)}
+                        className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      >
+                        <option value="">Any Island</option>
+                        <option value="Male">Male</option>
+                        {islands.map(island => (
+                          <option key={island} value={island}>{island}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-slate-700">To</label>
+                      <select 
+                        {...form.register("routeTo" as any)}
+                        className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                      >
+                        <option value="">Any Island</option>
+                        <option value="Male">Male</option>
+                        {islands.map(island => (
+                          <option key={island} value={island}>{island}</option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
 
                   {/* Trip Selection */}

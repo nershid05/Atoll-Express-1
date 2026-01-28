@@ -32,6 +32,8 @@ const boatNames = [
   "Yoosuf Empower"
 ];
 
+const islands = ["Eydhafushi", "Kudarikilu", "Kendhoo", "Maalhos"];
+
 export default function AdminTrips() {
   const { data: trips, isLoading } = useTrips();
   const { mutateAsync: createTrip } = useCreateTrip();
@@ -166,11 +168,23 @@ export default function AdminTrips() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">From</label>
-                  <input {...form.register("routeFrom")} className="w-full p-2 border rounded-md" placeholder="Male" />
+                  <select {...form.register("routeFrom")} className="w-full p-2 border rounded-md bg-white">
+                    <option value="">Select Origin</option>
+                    <option value="Male">Male</option>
+                    {islands.map(island => (
+                      <option key={island} value={island}>{island}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">To</label>
-                  <input {...form.register("routeTo")} className="w-full p-2 border rounded-md" placeholder="Eydhafushi" />
+                  <select {...form.register("routeTo")} className="w-full p-2 border rounded-md bg-white">
+                    <option value="">Select Destination</option>
+                    <option value="Male">Male</option>
+                    {islands.map(island => (
+                      <option key={island} value={island}>{island}</option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
