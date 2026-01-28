@@ -85,7 +85,7 @@ export default function Ticket() {
                 <div className="w-full h-0.5 bg-slate-200 relative">
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-2 w-2 rounded-full bg-primary" />
                 </div>
-                <span className="text-xs text-primary font-bold mt-1">Direct</span>
+                <span className="text-xs text-primary font-bold mt-1">{booking.date}</span>
               </div>
               <div className="text-right">
                 <p className="text-xs text-slate-400 font-bold uppercase">To</p>
