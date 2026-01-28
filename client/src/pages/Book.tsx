@@ -24,7 +24,7 @@ const bookingFormSchema = z.object({
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
 
-const islands = ["Eydhafushi", "Kudarikilu", "Kendhoo", "Maalhos"];
+const islands = ["Kudarikilu", "Kendhoo", "Maalhos", "Eydhafushi"];
 
 export default function Book() {
   const [location, setLocation] = useLocation();
@@ -54,9 +54,30 @@ export default function Book() {
   const filteredTrips = trips?.filter(t => {
     if (!t.isActive || t.departureDate !== selectedDate) return false;
     
-    // Island-specific route logic
-    if (routeFrom && t.routeFrom !== routeFrom) return false;
-    if (routeTo && t.routeTo !== routeTo) return false;
+    // Multi-stop transit logic
+    const stops = ["Kudarikilu", "Kendhoo", "Maalhos", "Eydhafushi", "Male"];
+    const reverseStops = [...stops].reverse();
+    
+    const isMainRoute = stops.includes(t.routeFrom) && stops.includes(t.routeTo);
+    const isReverseRoute = reverseStops.includes(t.routeFrom) && reverseStops.includes(t.routeTo);
+
+    if (routeFrom && routeTo) {
+      // If user selected specific from/to, check if this trip covers that segment
+      // For now, we assume a trip from Kudarikilu to Male covers all intermediate stops
+      // In a real system, we'd check the sequence. 
+      // Simplified: if trip is Kudarikilu -> Male, any sub-segment is valid.
+      const tripStops = t.routeFrom === "Kudarikilu" ? stops : reverseStops;
+      const fromIdx = tripStops.indexOf(routeFrom);
+      const toIdx = tripStops.indexOf(routeTo);
+      
+      const tripFromIdx = tripStops.indexOf(t.routeFrom);
+      const tripToIdx = tripStops.indexOf(t.routeTo);
+
+      if (fromIdx === -1 || toIdx === -1 || fromIdx >= toIdx) return false;
+      if (fromIdx < tripFromIdx || toIdx > tripToIdx) return false;
+    } else if (routeFrom) {
+      if (t.routeFrom !== routeFrom && !stops.includes(t.routeFrom)) return false;
+    }
     
     const now = new Date();
     const today = now.toISOString().split('T')[0];
