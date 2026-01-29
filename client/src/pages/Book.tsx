@@ -155,20 +155,6 @@ export default function Book() {
             <div className="md:col-span-2 space-y-6">
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Date Selection */}
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-slate-700">Select Date</label>
-                    <input 
-                      type="date"
-                      {...form.register("date")}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
-                    {form.formState.errors.date && (
-                      <p className="text-sm text-destructive">{form.formState.errors.date.message}</p>
-                    )}
-                  </div>
-
                   {/* Route Selection */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -197,6 +183,20 @@ export default function Book() {
                         ))}
                       </select>
                     </div>
+                  </div>
+
+                  {/* Date Selection */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Select Date</label>
+                    <input 
+                      type="date"
+                      {...form.register("date")}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    />
+                    {form.formState.errors.date && (
+                      <p className="text-sm text-destructive">{form.formState.errors.date.message}</p>
+                    )}
                   </div>
 
                   {/* Trip Selection */}
