@@ -32,7 +32,7 @@ const boatNames = [
   "Yoosuf Empower"
 ];
 
-const islands = ["Kudarikilu", "Kendhoo", "Maalhos", "Eydhafushi"];
+const islands = ["Kendhoo", "Kudarikilu", "Maalhos", "Eydhafushi"];
 
 export default function AdminTrips() {
   const { data: trips, isLoading } = useTrips();

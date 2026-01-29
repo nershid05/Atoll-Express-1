@@ -24,7 +24,7 @@ const bookingFormSchema = z.object({
 
 type BookingFormValues = z.infer<typeof bookingFormSchema>;
 
-const islands = ["Kudarikilu", "Kendhoo", "Maalhos", "Eydhafushi"];
+const islands = ["Kendhoo", "Kudarikilu", "Maalhos", "Eydhafushi"];
 
 export default function Book() {
   const [location, setLocation] = useLocation();
@@ -58,15 +58,15 @@ export default function Book() {
     const stops = ["Kudarikilu", "Kendhoo", "Maalhos", "Eydhafushi", "Male"];
     const reverseStops = [...stops].reverse();
     
-    const isMainRoute = stops.includes(t.routeFrom) && stops.includes(t.routeTo);
-    const isReverseRoute = reverseStops.includes(t.routeFrom) && reverseStops.includes(t.routeTo);
-
     if (routeFrom && routeTo) {
-      // If user selected specific from/to, check if this trip covers that segment
-      // For now, we assume a trip from Kudarikilu to Male covers all intermediate stops
-      // In a real system, we'd check the sequence. 
-      // Simplified: if trip is Kudarikilu -> Male, any sub-segment is valid.
-      const tripStops = t.routeFrom === "Kudarikilu" ? stops : reverseStops;
+      // Logic for Kendhoo -> Kudarikilu -> Maalhos -> Eydhafushi -> Male
+      const sequence = ["Kendhoo", "Kudarikilu", "Maalhos", "Eydhafushi", "Male"];
+      const reverseSequence = [...sequence].reverse();
+      
+      const isMainRoute = sequence.includes(t.routeFrom) && sequence.includes(t.routeTo);
+      const isReverseRoute = reverseSequence.includes(t.routeFrom) && reverseSequence.includes(t.routeTo);
+
+      const tripStops = t.routeFrom === "Kendhoo" ? sequence : reverseSequence;
       const fromIdx = tripStops.indexOf(routeFrom);
       const toIdx = tripStops.indexOf(routeTo);
       
