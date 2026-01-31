@@ -81,6 +81,15 @@ export async function registerRoutes(
     const trip = await storage.getTrip(input.tripId);
     if (!trip) return res.status(400).json({ message: "Invalid trip" });
     
+    // LIVE AVAILABILITY CHECK
+    const bookings = await storage.getBookings();
+    const tripBookings = bookings.filter(b => b.tripId === input.tripId && b.bookingStatus !== 'cancelled');
+    const occupiedSeats = tripBookings.reduce((sum, b) => sum + b.ticketQuantity, 0);
+    
+    if (occupiedSeats + input.ticketQuantity > trip.capacity) {
+      return res.status(400).json({ message: `Only ${trip.capacity - occupiedSeats} seats remaining for this trip.` });
+    }
+    
     // Calculate total price
     const totalPrice = trip.price * input.ticketQuantity;
     // Generate Ticket Code
@@ -149,15 +158,17 @@ export async function registerRoutes(
   // Seed Data if empty
   const existingTrips = await storage.getTrips();
   if (existingTrips.length === 0) {
+    const today = new Date().toISOString().split('T')[0];
     await storage.createTrip({
       routeFrom: "Male'",
       routeTo: "Baa Atoll (Eydhafushi)",
       departureTime: "07:00",
       arrivalTime: "09:30",
       price: 500, // MVR
-      capacity: 30,
+      capacity: 65,
       boatName: "YoosuSpeed 1",
-      isActive: true
+      isActive: true,
+      departureDate: today
     });
     await storage.createTrip({
       routeFrom: "Baa Atoll (Eydhafushi)",
@@ -165,9 +176,10 @@ export async function registerRoutes(
       departureTime: "14:00",
       arrivalTime: "16:30",
       price: 500,
-      capacity: 30,
+      capacity: 65,
       boatName: "YoosuSpeed 1",
-      isActive: true
+      isActive: true,
+      departureDate: today
     });
   }
 

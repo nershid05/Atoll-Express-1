@@ -45,7 +45,11 @@ export default function AdminTrips() {
 
   const form = useForm<TripFormValues>({
     resolver: zodResolver(tripSchema),
-    defaultValues: { isActive: true }
+    defaultValues: { 
+      isActive: true,
+      capacity: 65,
+      price: 500
+    }
   });
 
   const openCreate = () => {

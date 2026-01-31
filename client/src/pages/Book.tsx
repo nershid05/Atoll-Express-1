@@ -93,6 +93,14 @@ export default function Book() {
       return tripTime > now;
     }
     
+    // LIVE AVAILABILITY CHECK
+    // Check if the trip is already full
+    // In a real app, this would be a separate API call or join, 
+    // but we'll use the bookings list to count.
+    // However, the 'trips' object doesn't have booking counts here.
+    // We'll rely on the backend validation during submission, 
+    // but for UI, we can assume if it's visible, it has space or show 'Full'
+    
     return true;
   }) || [];
   const selectedTrip = trips?.find(t => t.id === selectedTripId);
