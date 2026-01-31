@@ -1,11 +1,19 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { Link } from "wouter";
-import { ArrowRight, Clock, ShieldCheck, Ship } from "lucide-react";
+import { ArrowRight, Clock, ShieldCheck, Ship, Star, Quote } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { type Testimonial } from "@shared/schema";
 
 import heroImg from "@assets/WhatsApp_Image_2026-01-21_at_03.57.08_1768949857607.jpeg";
 
 export default function Home() {
+  const { data: testimonials } = useQuery<Testimonial[]>({
+    queryKey: ["/api/testimonials"],
+  });
+
+  const activeTestimonials = testimonials?.filter(t => t.approved).slice(0, 3) || [];
+
   return (
     <div className="min-h-screen flex flex-col font-sans">
       <Navigation />
@@ -85,6 +93,39 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Testimonials */}
+      {activeTestimonials.length > 0 && (
+        <section className="py-24 bg-white">
+          <div className="container px-4">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">What Our Passengers Say</h2>
+              <p className="text-muted-foreground text-lg">Trusted by hundreds of travelers every week.</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8">
+              {activeTestimonials.map((testimonial) => (
+                <div key={testimonial.id} className="p-8 rounded-2xl bg-slate-50 border border-slate-100 relative">
+                  <Quote className="absolute top-6 right-8 h-8 w-8 text-slate-200" />
+                  <div className="flex gap-1 mb-4">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-primary text-primary" />
+                    ))}
+                  </div>
+                  <p className="text-slate-700 italic mb-6 leading-relaxed">
+                    "{testimonial.content}"
+                  </p>
+                  <div className="font-bold text-slate-900">{testimonial.name}</div>
+                </div>
+              ))}
+            </div>
+            <div className="text-center mt-12">
+              <Link href="/testimonials" className="text-primary font-semibold hover:underline">
+                Read all reviews
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="py-20 bg-primary text-white">

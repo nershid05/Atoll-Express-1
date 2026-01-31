@@ -15,7 +15,7 @@ export function Navigation() {
     { href: "/", label: "Home" },
     { href: "/schedule", label: "Schedule" },
     { href: "/book", label: "Book Now" },
-    { href: "/testimonials", label: "Reviews" },
+    { href: "/testimonials", label: "New Review" },
     { href: "/contact", label: "Contact" },
   ];
 
