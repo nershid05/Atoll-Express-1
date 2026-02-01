@@ -46,6 +46,29 @@ export async function registerRoutes(
     });
   };
 
+  // Route Codes
+  app.get(api.routeCodes.list.path, requireAdmin, async (req, res) => {
+    const codes = await storage.getRouteCodes();
+    res.json(codes);
+  });
+
+  app.post(api.routeCodes.create.path, requireAdmin, async (req, res) => {
+    const input = api.routeCodes.create.input.parse(req.body);
+    const code = await storage.createRouteCode(input);
+    res.status(201).json(code);
+  });
+
+  app.put(api.routeCodes.update.path, requireAdmin, async (req, res) => {
+    const input = api.routeCodes.update.input.parse(req.body);
+    const code = await storage.updateRouteCode(Number(req.params.id), input);
+    res.json(code);
+  });
+
+  app.delete(api.routeCodes.delete.path, requireAdmin, async (req, res) => {
+    await storage.deleteRouteCode(Number(req.params.id));
+    res.status(204).send();
+  });
+
   // Trips
   app.get(api.trips.list.path, async (req, res) => {
     const trips = await storage.getTrips();

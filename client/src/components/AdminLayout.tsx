@@ -8,7 +8,8 @@ import {
   MessageSquare, 
   Mail,
   LogOut,
-  Anchor
+  Anchor,
+  Route
 } from "lucide-react";
 import { useEffect } from "react";
 import { Loader2 } from "lucide-react";
@@ -39,6 +40,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
   const navItems = [
     { href: "/admin/dashboard", icon: LayoutDashboard, label: "Overview" },
+    { href: "/admin/route-codes", icon: Route, label: "Route Codes" },
     { href: "/admin/trips", icon: CalendarDays, label: "Schedule & Trips" },
     { href: "/admin/bookings", icon: Ticket, label: "Bookings" },
     { href: "/admin/testimonials", icon: MessageSquare, label: "Testimonials" },

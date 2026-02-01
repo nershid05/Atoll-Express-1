@@ -6,9 +6,24 @@ import { relations } from "drizzle-orm";
 // Export auth models
 export * from "./models/auth";
 
+// Route Codes - Group multiple routes under a single code
+export const routeCodes = pgTable("route_codes", {
+  id: serial("id").primaryKey(),
+  code: text("code").notNull().unique(),
+  name: text("name").notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertRouteCodeSchema = createInsertSchema(routeCodes).omit({ id: true, createdAt: true });
+export type RouteCode = typeof routeCodes.$inferSelect;
+export type InsertRouteCode = z.infer<typeof insertRouteCodeSchema>;
+
 // Trips Schedule
 export const trips = pgTable("trips", {
   id: serial("id").primaryKey(),
+  routeCodeId: integer("route_code_id"),
   routeFrom: text("route_from").notNull(),
   routeTo: text("route_to").notNull(),
   departureDate: text("departure_date").notNull(), // YYYY-MM-DD format

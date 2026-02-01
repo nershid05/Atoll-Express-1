@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { insertTripSchema, insertBookingSchema, insertTestimonialSchema, insertContactSchema, trips, bookings, testimonials, contactMessages } from './schema';
+import { insertTripSchema, insertBookingSchema, insertTestimonialSchema, insertContactSchema, insertRouteCodeSchema, trips, bookings, testimonials, contactMessages, routeCodes } from './schema';
 
 export const errorSchemas = {
   validation: z.object({
@@ -18,6 +18,45 @@ export const errorSchemas = {
 };
 
 export const api = {
+  routeCodes: {
+    list: {
+      method: 'GET' as const,
+      path: '/api/admin/route-codes',
+      responses: {
+        200: z.array(z.custom<typeof routeCodes.$inferSelect>()),
+        401: errorSchemas.unauthorized,
+      },
+    },
+    create: { // Admin only
+      method: 'POST' as const,
+      path: '/api/admin/route-codes',
+      input: insertRouteCodeSchema,
+      responses: {
+        201: z.custom<typeof routeCodes.$inferSelect>(),
+        401: errorSchemas.unauthorized,
+        400: errorSchemas.validation,
+      },
+    },
+    update: { // Admin only
+      method: 'PUT' as const,
+      path: '/api/admin/route-codes/:id',
+      input: insertRouteCodeSchema.partial(),
+      responses: {
+        200: z.custom<typeof routeCodes.$inferSelect>(),
+        401: errorSchemas.unauthorized,
+        404: errorSchemas.notFound,
+      },
+    },
+    delete: { // Admin only
+      method: 'DELETE' as const,
+      path: '/api/admin/route-codes/:id',
+      responses: {
+        204: z.void(),
+        401: errorSchemas.unauthorized,
+        404: errorSchemas.notFound,
+      },
+    },
+  },
   trips: {
     list: {
       method: 'GET' as const,
