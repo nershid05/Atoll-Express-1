@@ -1,6 +1,7 @@
 import { db } from "./db";
 import { 
   users, type User, type UpsertUser,
+  routeCodes, type RouteCode, type InsertRouteCode,
   trips, type Trip, type InsertTrip,
   bookings, type Booking, type InsertBooking,
   testimonials, type Testimonial, type InsertTestimonial,
@@ -14,6 +15,13 @@ export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   
+  // Route Codes
+  getRouteCodes(): Promise<RouteCode[]>;
+  getRouteCode(id: number): Promise<RouteCode | undefined>;
+  createRouteCode(code: InsertRouteCode): Promise<RouteCode>;
+  updateRouteCode(id: number, code: Partial<InsertRouteCode>): Promise<RouteCode>;
+  deleteRouteCode(id: number): Promise<void>;
+
   // Trips
   getTrips(): Promise<Trip[]>;
   getTrip(id: number): Promise<Trip | undefined>;
@@ -44,6 +52,26 @@ export class DatabaseStorage implements IStorage {
   }
   async upsertUser(user: UpsertUser): Promise<User> {
     return authStorage.upsertUser(user);
+  }
+
+  // Route Codes
+  async getRouteCodes(): Promise<RouteCode[]> {
+    return db.select().from(routeCodes).orderBy(routeCodes.name);
+  }
+  async getRouteCode(id: number): Promise<RouteCode | undefined> {
+    const [code] = await db.select().from(routeCodes).where(eq(routeCodes.id, id));
+    return code;
+  }
+  async createRouteCode(code: InsertRouteCode): Promise<RouteCode> {
+    const [newCode] = await db.insert(routeCodes).values(code).returning();
+    return newCode;
+  }
+  async updateRouteCode(id: number, updates: Partial<InsertRouteCode>): Promise<RouteCode> {
+    const [updated] = await db.update(routeCodes).set(updates).where(eq(routeCodes.id, id)).returning();
+    return updated;
+  }
+  async deleteRouteCode(id: number): Promise<void> {
+    await db.delete(routeCodes).where(eq(routeCodes.id, id));
   }
 
   // Trips
