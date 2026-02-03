@@ -174,7 +174,9 @@ export default function Book() {
                               const dateStr = format(date, "yyyy-MM-dd");
                               const today = new Date();
                               today.setHours(0, 0, 0, 0);
-                              return date < today || (selectedRouteName && !availableDates.includes(dateStr));
+                              const isPast = date < today;
+                              const hasTrip = selectedRouteName ? availableDates.includes(dateStr) : true;
+                              return isPast || !hasTrip;
                             }}
                             initialFocus
                           />
