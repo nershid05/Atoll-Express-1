@@ -6,9 +6,13 @@ import { useLocation, useSearch } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowRight, Loader2, MapPin, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Loader2, MapPin, CheckCircle2, CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
+import { format, parseISO, isSameDay } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 
 // Schema for the form
 const bookingFormSchema = z.object({
@@ -52,6 +56,11 @@ export default function Book() {
   const paymentMethod = form.watch("paymentMethod");
   
   const availableRouteNames = Array.from(new Set(trips?.map(t => t.routeName) || []));
+
+  // Get dates that have trips for the selected route
+  const availableDates = trips
+    ?.filter(t => t.isActive && (!selectedRouteName || t.routeName === selectedRouteName))
+    .map(t => t.departureDate) || [];
 
   const filteredTrips = trips?.filter(t => {
     if (!t.isActive || t.departureDate !== selectedDate) return false;
@@ -138,12 +147,45 @@ export default function Book() {
                   {/* Date Selection */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">Select Date</label>
-                    <input 
-                      type="date"
-                      {...form.register("date")}
-                      min={new Date().toISOString().split('T')[0]}
-                      className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    />
+                    <div className="flex flex-col gap-2">
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full justify-start text-left font-normal h-12 rounded-lg border-slate-200",
+                              !selectedDate && "text-muted-foreground"
+                            )}
+                          >
+                            <CalendarIcon className="mr-2 h-4 w-4" />
+                            {selectedDate ? format(parseISO(selectedDate), "PPP") : <span>Pick a date</span>}
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={selectedDate ? parseISO(selectedDate) : undefined}
+                            onSelect={(date) => {
+                              if (date) {
+                                form.setValue("date", format(date, "yyyy-MM-dd"));
+                              }
+                            }}
+                            disabled={(date) => {
+                              const dateStr = format(date, "yyyy-MM-dd");
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              return date < today || (selectedRouteName && !availableDates.includes(dateStr));
+                            }}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      {availableDates.length > 0 && selectedRouteName && (
+                        <p className="text-[10px] text-muted-foreground italic">
+                          Highlighted dates have available trips for this route.
+                        </p>
+                      )}
+                    </div>
                     {form.formState.errors.date && (
                       <p className="text-sm text-destructive">{form.formState.errors.date.message}</p>
                     )}
