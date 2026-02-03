@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 
 // Schema for the form
 const bookingFormSchema = z.object({
+  routeName: z.string().min(1, "Please select a route"),
   date: z.string().min(1, "Please select a date"),
   tripId: z.coerce.number().min(1, "Please select a trip"),
   customerName: z.string().min(2, "Name is required"),
@@ -45,62 +46,16 @@ export default function Book() {
     }
   });
 
+  const selectedRouteName = form.watch("routeName");
   const selectedDate = form.watch("date");
   const selectedTripId = Number(form.watch("tripId"));
   const paymentMethod = form.watch("paymentMethod");
-  const routeFrom = form.watch("routeFrom" as any);
-  const routeTo = form.watch("routeTo" as any);
   
+  const availableRouteNames = Array.from(new Set(trips?.map(t => t.routeName) || []));
+
   const filteredTrips = trips?.filter(t => {
     if (!t.isActive || t.departureDate !== selectedDate) return false;
-    
-    // Multi-stop transit logic
-    const stops = ["Kudarikilu", "Kendhoo", "Maalhos", "Eydhafushi", "Male"];
-    const reverseStops = [...stops].reverse();
-    
-    const isMainRoute = stops.includes(t.routeFrom) && stops.includes(t.routeTo);
-    const isReverseRoute = reverseStops.includes(t.routeFrom) && reverseStops.includes(t.routeTo);
-
-    if (routeFrom && routeTo) {
-      // If user selected specific from/to, check if this trip covers that segment
-      // For now, we assume a trip from Kudarikilu to Male covers all intermediate stops
-      // In a real system, we'd check the sequence. 
-      // Simplified: if trip is Kudarikilu -> Male, any sub-segment is valid.
-      const tripStops = t.routeFrom === "Kudarikilu" ? stops : reverseStops;
-      const fromIdx = tripStops.indexOf(routeFrom);
-      const toIdx = tripStops.indexOf(routeTo);
-      
-      const tripFromIdx = tripStops.indexOf(t.routeFrom);
-      const tripToIdx = tripStops.indexOf(t.routeTo);
-
-      if (fromIdx === -1 || toIdx === -1 || fromIdx >= toIdx) return false;
-      if (fromIdx < tripFromIdx || toIdx > tripToIdx) return false;
-    } else if (routeFrom) {
-      if (t.routeFrom !== routeFrom && !stops.includes(t.routeFrom)) return false;
-    }
-    
-    const now = new Date();
-    const today = now.toISOString().split('T')[0];
-    
-    // Prevent past dates entirely if someone tries to hack the input
-    if (selectedDate < today) return false;
-    
-    // Filter out past trips for today
-    if (selectedDate === today) {
-      const [hours, minutes] = t.departureTime.split(':').map(Number);
-      const tripTime = new Date();
-      tripTime.setHours(hours, minutes, 0, 0);
-      return tripTime > now;
-    }
-    
-    // LIVE AVAILABILITY CHECK
-    // Check if the trip is already full
-    // In a real app, this would be a separate API call or join, 
-    // but we'll use the bookings list to count.
-    // However, the 'trips' object doesn't have booking counts here.
-    // We'll rely on the backend validation during submission, 
-    // but for UI, we can assume if it's visible, it has space or show 'Full'
-    
+    if (selectedRouteName && t.routeName !== selectedRouteName) return false;
     return true;
   }) || [];
   const selectedTrip = trips?.find(t => t.id === selectedTripId);
@@ -163,34 +118,21 @@ export default function Book() {
             <div className="md:col-span-2 space-y-6">
               <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  {/* Route Selection */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700">From</label>
-                      <select 
-                        {...form.register("routeFrom" as any)}
-                        className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      >
-                        <option value="">Any Island</option>
-                        <option value="Male">Male</option>
-                        {islands.map(island => (
-                          <option key={island} value={island}>{island}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-slate-700">To</label>
-                      <select 
-                        {...form.register("routeTo" as any)}
-                        className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                      >
-                        <option value="">Any Island</option>
-                        <option value="Male">Male</option>
-                        {islands.map(island => (
-                          <option key={island} value={island}>{island}</option>
-                        ))}
-                      </select>
-                    </div>
+                  {/* Route Name Selection */}
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium text-slate-700">Select Route</label>
+                    <select 
+                      {...form.register("routeName")}
+                      className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
+                    >
+                      <option value="">Choose a route</option>
+                      {availableRouteNames.map(name => (
+                        <option key={name} value={name}>{name}</option>
+                      ))}
+                    </select>
+                    {form.formState.errors.routeName && (
+                      <p className="text-sm text-destructive">{form.formState.errors.routeName.message}</p>
+                    )}
                   </div>
 
                   {/* Date Selection */}

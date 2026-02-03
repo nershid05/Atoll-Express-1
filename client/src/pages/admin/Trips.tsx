@@ -10,6 +10,7 @@ import { type Trip } from "@shared/schema";
 
 // Simple Schema matches InsertTrip but ensuring proper types
 const tripSchema = z.object({
+  routeName: z.string().min(1, "Route name required"),
   routeFrom: z.string().min(1, "Origin required"),
   routeTo: z.string().min(1, "Destination required"),
   departureDate: z.string().min(1, "Date required"),
@@ -22,6 +23,11 @@ const tripSchema = z.object({
 });
 
 type TripFormValues = z.infer<typeof tripSchema>;
+
+const routeNames = [
+  "Baa Atoll - Male",
+  "Male - Baa Atoll"
+];
 
 const boatNames = [
   "Yoosuf Rasgefaanu",
@@ -164,6 +170,17 @@ export default function AdminTrips() {
             </div>
             
             <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Route Name (Reusable)</label>
+                <select {...form.register("routeName")} className="w-full p-2 border rounded-md bg-white">
+                  <option value="">Select Route Name</option>
+                  {routeNames.map(name => (
+                    <option key={name} value={name}>{name}</option>
+                  ))}
+                  <option value="Custom">Custom</option>
+                </select>
+              </div>
+
               <div className="space-y-2">
                 <label className="text-sm font-medium">Departure Date</label>
                 <input {...form.register("departureDate")} type="date" className="w-full p-2 border rounded-md" />

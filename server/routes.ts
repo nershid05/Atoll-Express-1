@@ -48,8 +48,19 @@ export async function registerRoutes(
 
   // Trips
   app.get(api.trips.list.path, async (req, res) => {
-    const trips = await storage.getTrips();
-    res.json(trips);
+    // Automatically hide/deactivate past trips
+    const allTrips = await storage.getTrips();
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+
+    const validTrips = allTrips.filter(t => {
+      if (t.departureDate < today) return false;
+      if (t.departureDate === today && t.departureTime < currentTime) return false;
+      return true;
+    });
+
+    res.json(validTrips);
   });
 
   app.get(api.trips.get.path, async (req, res) => {
@@ -160,6 +171,7 @@ export async function registerRoutes(
   if (existingTrips.length === 0) {
     const today = new Date().toISOString().split('T')[0];
     await storage.createTrip({
+      routeName: "Male - Baa Atoll",
       routeFrom: "Male'",
       routeTo: "Baa Atoll (Eydhafushi)",
       departureTime: "07:00",
@@ -171,6 +183,7 @@ export async function registerRoutes(
       departureDate: today
     });
     await storage.createTrip({
+      routeName: "Baa Atoll - Male",
       routeFrom: "Baa Atoll (Eydhafushi)",
       routeTo: "Male'",
       departureTime: "14:00",

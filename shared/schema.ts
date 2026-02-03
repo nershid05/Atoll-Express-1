@@ -9,6 +9,7 @@ export * from "./models/auth";
 // Trips Schedule
 export const trips = pgTable("trips", {
   id: serial("id").primaryKey(),
+  routeName: text("route_name").notNull().default("Direct Route"),
   routeFrom: text("route_from").notNull(),
   routeTo: text("route_to").notNull(),
   departureDate: text("departure_date").notNull(), // YYYY-MM-DD format
