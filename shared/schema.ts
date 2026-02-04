@@ -6,18 +6,29 @@ import { relations } from "drizzle-orm";
 // Export auth models
 export * from "./models/auth";
 
+// Routes (Boat/Capacity assignments)
+export const routes = pgTable("routes", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(), // e.g., "Male - Baa Atoll"
+  boatName: text("boat_name").notNull(),
+  capacity: integer("capacity").notNull(),
+  isActive: boolean("is_active").default(true),
+});
+
+export const insertRouteSchema = createInsertSchema(routes).omit({ id: true });
+export type Route = typeof routes.$inferSelect;
+export type InsertRoute = z.infer<typeof insertRouteSchema>;
+
 // Trips Schedule
 export const trips = pgTable("trips", {
   id: serial("id").primaryKey(),
-  routeName: text("route_name").notNull().default("Direct Route"),
+  routeName: text("route_name").notNull(), // Links to routes.name
   routeFrom: text("route_from").notNull(),
   routeTo: text("route_to").notNull(),
   departureDate: text("departure_date").notNull(), // YYYY-MM-DD format
   departureTime: text("departure_time").notNull(), // HH:MM format
   arrivalTime: text("arrival_time").notNull(), // HH:MM format
   price: integer("price").notNull(), // In MVR
-  capacity: integer("capacity").notNull(),
-  boatName: text("boat_name").notNull(),
   isActive: boolean("is_active").default(true),
 });
 

@@ -92,13 +92,16 @@ export async function registerRoutes(
     const trip = await storage.getTrip(input.tripId);
     if (!trip) return res.status(400).json({ message: "Invalid trip" });
     
-    // LIVE AVAILABILITY CHECK
-    const bookings = await storage.getBookings();
-    const tripBookings = bookings.filter(b => b.tripId === input.tripId && b.bookingStatus !== 'cancelled');
-    const occupiedSeats = tripBookings.reduce((sum, b) => sum + b.ticketQuantity, 0);
+    // Fetch route for capacity
+    const route = await storage.getRouteByName(trip.routeName);
+    if (!route) return res.status(400).json({ message: "Route configuration not found" });
+
+    // LIVE AVAILABILITY CHECK (Per Route/Date)
+    const routeBookings = await storage.getBookingsByRouteAndDate(trip.routeName, trip.departureDate);
+    const occupiedSeats = routeBookings.reduce((sum, b) => sum + b.ticketQuantity, 0);
     
-    if (occupiedSeats + input.ticketQuantity > trip.capacity) {
-      return res.status(400).json({ message: `Only ${trip.capacity - occupiedSeats} seats remaining for this trip.` });
+    if (occupiedSeats + input.ticketQuantity > route.capacity) {
+      return res.status(400).json({ message: `Only ${route.capacity - occupiedSeats} seats remaining for this route on ${trip.departureDate}.` });
     }
     
     // Calculate total price
@@ -167,6 +170,22 @@ export async function registerRoutes(
   });
 
   // Seed Data if empty
+  const allRoutes = await storage.getRoutes();
+  if (allRoutes.length === 0) {
+    await storage.createRoute({
+      name: "Male - Baa Atoll",
+      boatName: "YoosuSpeed 1",
+      capacity: 65,
+      isActive: true
+    });
+    await storage.createRoute({
+      name: "Baa Atoll - Male",
+      boatName: "YoosuSpeed 1",
+      capacity: 65,
+      isActive: true
+    });
+  }
+
   const existingTrips = await storage.getTrips();
   if (existingTrips.length === 0) {
     const today = new Date().toISOString().split('T')[0];
@@ -177,8 +196,6 @@ export async function registerRoutes(
       departureTime: "07:00",
       arrivalTime: "09:30",
       price: 500, // MVR
-      capacity: 65,
-      boatName: "YoosuSpeed 1",
       isActive: true,
       departureDate: today
     });
@@ -189,8 +206,6 @@ export async function registerRoutes(
       departureTime: "14:00",
       arrivalTime: "16:30",
       price: 500,
-      capacity: 65,
-      boatName: "YoosuSpeed 1",
       isActive: true,
       departureDate: today
     });

@@ -1,18 +1,25 @@
 import { db } from "./db";
 import { 
   users, type User, type UpsertUser,
+  routes, type Route, type InsertRoute,
   trips, type Trip, type InsertTrip,
   bookings, type Booking, type InsertBooking,
   testimonials, type Testimonial, type InsertTestimonial,
   contactMessages, type ContactMessage, type InsertContact
 } from "@shared/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 import { authStorage } from "./replit_integrations/auth/storage";
 
 export interface IStorage {
   // Auth
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  
+  // Routes
+  getRoutes(): Promise<Route[]>;
+  getRouteByName(name: string): Promise<Route | undefined>;
+  createRoute(route: InsertRoute): Promise<Route>;
+  updateRoute(id: number, route: Partial<InsertRoute>): Promise<Route>;
   
   // Trips
   getTrips(): Promise<Trip[]>;
@@ -25,8 +32,10 @@ export interface IStorage {
   createBooking(booking: InsertBooking & { ticketCode: string, totalPrice: number }): Promise<Booking>;
   getBooking(id: number): Promise<Booking | undefined>;
   getBookings(): Promise<Booking[]>; // Admin
+  getBookingsByTrip(tripId: number): Promise<Booking[]>;
+  getBookingsByRouteAndDate(routeName: string, departureDate: string): Promise<Booking[]>;
   updateBookingStatus(id: number, status: { bookingStatus?: string, paymentStatus?: string }): Promise<Booking>;
-
+  
   // Testimonials
   getTestimonials(onlyApproved?: boolean): Promise<Testimonial[]>;
   createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
@@ -44,6 +53,23 @@ export class DatabaseStorage implements IStorage {
   }
   async upsertUser(user: UpsertUser): Promise<User> {
     return authStorage.upsertUser(user);
+  }
+
+  // Routes
+  async getRoutes(): Promise<Route[]> {
+    return db.select().from(routes);
+  }
+  async getRouteByName(name: string): Promise<Route | undefined> {
+    const [route] = await db.select().from(routes).where(eq(routes.name, name));
+    return route;
+  }
+  async createRoute(route: InsertRoute): Promise<Route> {
+    const [newRoute] = await db.insert(routes).values(route).returning();
+    return newRoute;
+  }
+  async updateRoute(id: number, updates: Partial<InsertRoute>): Promise<Route> {
+    const [updated] = await db.update(routes).set(updates).where(eq(routes.id, id)).returning();
+    return updated;
   }
 
   // Trips
@@ -81,9 +107,17 @@ export class DatabaseStorage implements IStorage {
   async getBookings(): Promise<Booking[]> {
     return db.select().from(bookings).orderBy(desc(bookings.createdAt));
   }
-  async updateBookingStatus(id: number, status: { bookingStatus?: string, paymentStatus?: string }): Promise<Booking> {
-    const [updated] = await db.update(bookings).set(status).where(eq(bookings.id, id)).returning();
-    return updated;
+  async getBookingsByTrip(tripId: number): Promise<Booking[]> {
+    return db.select().from(bookings).where(eq(bookings.tripId, tripId));
+  }
+  async getBookingsByRouteAndDate(routeName: string, departureDate: string): Promise<Booking[]> {
+    const allTrips = await db.select().from(trips).where(and(eq(trips.routeName, routeName), eq(trips.departureDate, departureDate)));
+    const tripIds = allTrips.map(t => t.id);
+    if (tripIds.length === 0) return [];
+    
+    // Manual filtering or complex join if needed, but for MVP let's filter after fetching bookings for these trips
+    const allBookings = await db.select().from(bookings);
+    return allBookings.filter(b => tripIds.includes(b.tripId) && b.bookingStatus !== 'cancelled');
   }
 
   // Testimonials
