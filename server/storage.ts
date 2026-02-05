@@ -107,15 +107,20 @@ export class DatabaseStorage implements IStorage {
   async getBookings(): Promise<Booking[]> {
     return db.select().from(bookings).orderBy(desc(bookings.createdAt));
   }
+  async updateBookingStatus(id: number, status: { bookingStatus?: string, paymentStatus?: string }): Promise<Booking> {
+    const [updated] = await db.update(bookings).set(status).where(eq(bookings.id, id)).returning();
+    return updated;
+  }
+
   async getBookingsByTrip(tripId: number): Promise<Booking[]> {
     return db.select().from(bookings).where(eq(bookings.tripId, tripId));
   }
+
   async getBookingsByRouteAndDate(routeName: string, departureDate: string): Promise<Booking[]> {
     const allTrips = await db.select().from(trips).where(and(eq(trips.routeName, routeName), eq(trips.departureDate, departureDate)));
     const tripIds = allTrips.map(t => t.id);
     if (tripIds.length === 0) return [];
     
-    // Manual filtering or complex join if needed, but for MVP let's filter after fetching bookings for these trips
     const allBookings = await db.select().from(bookings);
     return allBookings.filter(b => tripIds.includes(b.tripId) && b.bookingStatus !== 'cancelled');
   }

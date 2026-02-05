@@ -13,6 +13,8 @@ import { format, parseISO, isSameDay } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
+import { useQuery } from "@tanstack/react-query";
+import { type Route } from "@shared/schema";
 
 // Schema for the form
 const bookingFormSchema = z.object({
@@ -67,9 +69,10 @@ export default function Book() {
     if (selectedRouteName && t.routeName !== selectedRouteName) return false;
     return true;
   }) || [];
-  const selectedTrip = trips?.find(t => t.id === selectedTripId);
 
-  // Reset trip selection if date changes and current trip is not available
+  const { data: routes } = useQuery<Route[]>({ queryKey: ["/api/routes"] });
+  const selectedTrip = trips?.find(t => t.id === selectedTripId);
+  const selectedRoute = routes?.find(r => r.name === selectedTrip?.routeName);
   useEffect(() => {
     if (selectedTripId && !filteredTrips.some(t => t.id === selectedTripId)) {
       form.setValue("tripId", 0);
@@ -369,9 +372,10 @@ export default function Book() {
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center py-2 border-b border-dashed">
-                      <span className="text-sm text-muted-foreground">Date</span>
-                      <span className="font-medium">{selectedTrip.departureDate}</span>
+                    <div className="flex gap-4 text-sm text-muted-foreground">
+                      <span>Boat: {selectedRoute?.boatName || "TBA"}</span>
+                      <span>•</span>
+                      <span>Capacity: {selectedRoute?.capacity || "TBA"} seats</span>
                     </div>
 
                     <div className="flex justify-between items-center py-2 border-b border-dashed">

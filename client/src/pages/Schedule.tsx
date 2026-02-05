@@ -4,9 +4,12 @@ import { useTrips } from "@/hooks/use-trips";
 import { Link } from "wouter";
 import { ArrowRight, Loader2, MapPin, Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { type Route } from "@shared/schema";
 
 export default function Schedule() {
   const { data: trips, isLoading } = useTrips();
+  const { data: routes } = useQuery<Route[]>({ queryKey: ["/api/routes"] });
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
@@ -80,9 +83,16 @@ export default function Schedule() {
                         </div>
                       </div>
                       <div className="flex gap-4 text-sm text-muted-foreground">
-                        <span>Boat: {trip.boatName}</span>
-                        <span>•</span>
-                        <span>Capacity: {trip.capacity} seats</span>
+                        {(() => {
+                          const route = routes?.find(r => r.name === trip.routeName);
+                          return (
+                            <>
+                              <span>Boat: {route?.boatName || "TBA"}</span>
+                              <span>•</span>
+                              <span>Capacity: {route?.capacity || "TBA"} seats</span>
+                            </>
+                          );
+                        })()}
                       </div>
                     </div>
 

@@ -157,6 +157,22 @@ export async function registerRoutes(
     res.json(testimonial);
   });
 
+  // Routes
+  app.get("/api/routes", async (req, res) => {
+    const allRoutes = await storage.getRoutes();
+    res.json(allRoutes);
+  });
+
+  app.post("/api/routes", requireAdmin, async (req, res) => {
+    const route = await storage.createRoute(req.body);
+    res.status(201).json(route);
+  });
+
+  app.patch("/api/routes/:id", requireAdmin, async (req, res) => {
+    const route = await storage.updateRoute(Number(req.params.id), req.body);
+    res.json(route);
+  });
+
   // Contact
   app.post(api.contact.create.path, async (req, res) => {
     const input = api.contact.create.input.parse(req.body);

@@ -17,8 +17,6 @@ const tripSchema = z.object({
   departureTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "HH:MM format"),
   arrivalTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "HH:MM format"),
   price: z.coerce.number().min(1),
-  capacity: z.coerce.number().min(1),
-  boatName: z.string().min(1),
   isActive: z.boolean().default(true),
 });
 
@@ -53,7 +51,6 @@ export default function AdminTrips() {
     resolver: zodResolver(tripSchema),
     defaultValues: { 
       isActive: true,
-      capacity: 65,
       price: 500
     }
   });
@@ -77,7 +74,7 @@ export default function AdminTrips() {
     if (editingTrip) {
       await updateTrip({ id: editingTrip.id, ...data });
     } else {
-      await createTrip(data);
+      await createTrip({ ...data });
     }
     setIsModalOpen(false);
   };
@@ -128,7 +125,7 @@ export default function AdminTrips() {
                 <td className="p-4">
                   <div className="text-sm font-mono">{trip.departureTime} - {trip.arrivalTime}</div>
                 </td>
-                <td className="p-4 text-sm text-slate-600">{trip.boatName} ({trip.capacity} pax)</td>
+                <td className="p-4 text-sm text-slate-600">Managed via Route</td>
                 <td className="p-4 text-sm font-medium">MVR {trip.price}</td>
                 <td className="p-4">
                   <span className={`inline-flex px-2 py-1 rounded text-xs font-medium ${
@@ -225,23 +222,6 @@ export default function AdminTrips() {
                   <label className="text-sm font-medium">Price (MVR)</label>
                   <input {...form.register("price")} type="number" className="w-full p-2 border rounded-md" />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Capacity</label>
-                  <input {...form.register("capacity")} type="number" className="w-full p-2 border rounded-md" />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Boat Name</label>
-                <select 
-                  {...form.register("boatName")} 
-                  className="w-full p-2 border rounded-md bg-white"
-                >
-                  <option value="">Select a boat</option>
-                  {boatNames.map(name => (
-                    <option key={name} value={name}>{name}</option>
-                  ))}
-                </select>
               </div>
 
               <div className="flex items-center gap-2">
