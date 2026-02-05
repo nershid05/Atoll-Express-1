@@ -104,7 +104,7 @@ export default function Ticket() {
               <div className="p-3 bg-slate-50 rounded-lg">
                 <p className="text-xs text-slate-500 mb-1">Boat</p>
                 <p className="font-semibold text-sm flex items-center gap-1">
-                  <Ship className="h-3 w-3 text-primary" /> {route?.boatName || trip.boatName || "TBA"}
+                  <Ship className="h-3 w-3 text-primary" /> {route?.boatName || "TBA"}
                 </p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
