@@ -7,6 +7,8 @@ import { format } from "date-fns";
 import html2canvas from "html2canvas";
 import { useRef } from "react";
 import logoImg from "@assets/67479162_2414021002167097_5524966927945957376_n_1768950438961.jpg";
+import { useQuery } from "@tanstack/react-query";
+import { type Route } from "@shared/schema";
 
 export default function Ticket() {
   const [, params] = useRoute("/ticket/:id");
@@ -14,9 +16,10 @@ export default function Ticket() {
   const ticketRef = useRef<HTMLDivElement>(null);
   
   const { data: booking, isLoading: bookingLoading } = useBooking(bookingId);
-  // We need to fetch trip details separately based on booking.tripId
   const { data: trip, isLoading: tripLoading } = useTrip(booking?.tripId || 0);
+  const { data: routes } = useQuery<Route[]>({ queryKey: ["/api/routes"] });
 
+  const route = routes?.find(r => r.name === trip?.routeName);
   const isLoading = bookingLoading || tripLoading;
 
   const handleDownload = async () => {
@@ -101,7 +104,7 @@ export default function Ticket() {
               <div className="p-3 bg-slate-50 rounded-lg">
                 <p className="text-xs text-slate-500 mb-1">Boat</p>
                 <p className="font-semibold text-sm flex items-center gap-1">
-                  <Ship className="h-3 w-3 text-primary" /> {trip.boatName}
+                  <Ship className="h-3 w-3 text-primary" /> {route?.boatName || trip.boatName || "TBA"}
                 </p>
               </div>
               <div className="p-3 bg-slate-50 rounded-lg">
