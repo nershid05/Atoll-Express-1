@@ -170,60 +170,62 @@ export default function AdminTrips() {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
-        <table className="w-full text-left border-collapse">
-          <thead className="bg-slate-50 border-b border-slate-200">
-            <tr>
-              <th className="p-4 font-semibold text-slate-700">Date</th>
-              <th className="p-4 font-semibold text-slate-700">Route</th>
-              <th className="p-4 font-semibold text-slate-700">Time</th>
-              <th className="p-4 font-semibold text-slate-700">Boat (Route Level)</th>
-              <th className="p-4 font-semibold text-slate-700">Price</th>
-              <th className="p-4 font-semibold text-slate-700">Status</th>
-              <th className="p-4 font-semibold text-slate-700 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100">
-            {trips?.map((trip) => {
-              const route = routes?.find(r => r.name === trip.routeName);
-              return (
-                <tr key={trip.id} className="hover:bg-slate-50/50">
-                  <td className="p-4">
-                    <div className="text-sm font-medium text-slate-600">{trip.departureDate}</div>
-                  </td>
-                  <td className="p-4">
-                    <div className="font-medium text-slate-900">{trip.routeFrom} → {trip.routeTo}</div>
-                    <div className="text-[10px] text-slate-400 uppercase font-bold">{trip.routeName}</div>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-sm font-mono">{trip.departureTime} - {trip.arrivalTime}</div>
-                  </td>
-                  <td className="p-4">
-                    <div className="text-sm text-slate-600 font-medium">{route?.boatName || "Not set"}</div>
-                    <div className="text-xs text-slate-400">{route?.capacity || 0} seats total</div>
-                  </td>
-                  <td className="p-4 text-sm font-medium">MVR {trip.price}</td>
-                  <td className="p-4">
-                    <span className={`inline-flex px-2 py-1 rounded text-xs font-medium ${
-                      trip.isActive ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
-                    }`}>
-                      {trip.isActive ? "Active" : "Inactive"}
-                    </span>
-                  </td>
-                  <td className="p-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button onClick={() => openEdit(trip)} className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors">
-                        <Edit2 className="h-4 w-4" />
-                      </button>
-                      <button onClick={() => handleDelete(trip.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[800px]">
+            <thead className="bg-slate-50 border-b border-slate-200">
+              <tr>
+                <th className="p-4 font-semibold text-slate-700">Date</th>
+                <th className="p-4 font-semibold text-slate-700">Route</th>
+                <th className="p-4 font-semibold text-slate-700">Time</th>
+                <th className="p-4 font-semibold text-slate-700">Boat (Route Level)</th>
+                <th className="p-4 font-semibold text-slate-700">Price</th>
+                <th className="p-4 font-semibold text-slate-700">Status</th>
+                <th className="p-4 font-semibold text-slate-700 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {trips?.map((trip) => {
+                const route = routes?.find(r => r.name === trip.routeName);
+                return (
+                  <tr key={trip.id} className="hover:bg-slate-50/50">
+                    <td className="p-4">
+                      <div className="text-sm font-medium text-slate-600">{trip.departureDate}</div>
+                    </td>
+                    <td className="p-4">
+                      <div className="font-medium text-slate-900">{trip.routeFrom} → {trip.routeTo}</div>
+                      <div className="text-[10px] text-slate-400 uppercase font-bold">{trip.routeName}</div>
+                    </td>
+                    <td className="p-4">
+                      <div className="text-sm font-mono">{trip.departureTime} - {trip.arrivalTime}</div>
+                    </td>
+                    <td className="p-4">
+                      <div className="text-sm text-slate-600 font-medium">{route?.boatName || "Not set"}</div>
+                      <div className="text-xs text-slate-400">{route?.capacity || 0} seats total</div>
+                    </td>
+                    <td className="p-4 text-sm font-medium">MVR {trip.price}</td>
+                    <td className="p-4">
+                      <span className={`inline-flex px-2 py-1 rounded text-xs font-medium ${
+                        trip.isActive ? "bg-green-100 text-green-700" : "bg-slate-100 text-slate-500"
+                      }`}>
+                        {trip.isActive ? "Active" : "Inactive"}
+                      </span>
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button onClick={() => openEdit(trip)} className="p-2 text-slate-400 hover:text-primary hover:bg-blue-50 rounded-lg transition-colors">
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                        <button onClick={() => handleDelete(trip.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Route Edit Modal */}
