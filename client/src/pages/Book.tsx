@@ -374,8 +374,6 @@ export default function Book() {
 
                     <div className="flex gap-4 text-sm text-muted-foreground">
                       <span>Boat: {selectedRoute?.boatName || "TBA"}</span>
-                      <span>•</span>
-                      <span>Capacity: {selectedRoute?.capacity || "TBA"} seats</span>
                     </div>
 
                     <div className="flex justify-between items-center py-2 border-b border-dashed">

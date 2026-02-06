@@ -86,11 +86,7 @@ export default function Schedule() {
                         {(() => {
                           const route = routes?.find(r => r.name === trip.routeName);
                           return (
-                            <>
-                              <span>Boat: {route?.boatName || "TBA"}</span>
-                              <span>•</span>
-                              <span>Capacity: {route?.capacity || "TBA"} seats</span>
-                            </>
+                            <span>Boat: {route?.boatName || "TBA"}</span>
                           );
                         })()}
                       </div>
