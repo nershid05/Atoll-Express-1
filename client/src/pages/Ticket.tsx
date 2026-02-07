@@ -1,7 +1,7 @@
 import { useBooking } from "@/hooks/use-bookings";
 import { useTrip } from "@/hooks/use-trips";
 import { useRoute } from "wouter";
-import { Loader2, Printer, MapPin, Calendar, CreditCard, Anchor, CheckCircle, Ship, Download } from "lucide-react";
+import { Loader2, Printer, MapPin, Calendar, CreditCard, Anchor, CheckCircle, Ship, Download, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button"; // Assuming UI component exists, or use standard
 import { format } from "date-fns";
 import html2canvas from "html2canvas";
@@ -9,11 +9,13 @@ import { useRef } from "react";
 import logoImg from "@assets/67479162_2414021002167097_5524966927945957376_n_1768950438961.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { type Route } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Ticket() {
   const [, params] = useRoute("/ticket/:id");
   const bookingId = Number(params?.id);
   const ticketRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
   
   const { data: booking, isLoading: bookingLoading } = useBooking(bookingId);
   const { data: trip, isLoading: tripLoading } = useTrip(booking?.tripId || 0);
@@ -21,6 +23,28 @@ export default function Ticket() {
 
   const route = routes?.find(r => r.name === trip?.routeName);
   const isLoading = bookingLoading || tripLoading;
+
+  const handleShare = async () => {
+    const shareData = {
+      title: "My Yoosufspeed Ferry Trip",
+      text: `I'm traveling from ${trip?.routeFrom} to ${trip?.routeTo} on ${trip?.departureDate} with Yoosufspeed!`,
+      url: window.location.href,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        toast({
+          title: "Link copied!",
+          description: "Trip link copied to clipboard. Share it with your friends!",
+        });
+      }
+    } catch (err) {
+      console.error("Error sharing:", err);
+    }
+  };
 
   const handleDownload = async () => {
     if (ticketRef.current) {
@@ -133,7 +157,14 @@ export default function Ticket() {
         </div>
 
         {/* Action Buttons (Hidden in Print) */}
-        <div className="mt-8 flex flex-col sm:flex-row justify-center gap-4 no-print">
+        <div className="mt-8 flex flex-wrap justify-center gap-4 no-print">
+          <button 
+            onClick={handleShare}
+            className="flex items-center justify-center gap-2 px-6 py-3 bg-secondary text-white rounded-full font-semibold shadow-lg hover:bg-secondary/90 transition-colors"
+          >
+            <Share2 className="h-4 w-4" />
+            Share Trip
+          </button>
           <button 
             onClick={handleDownload}
             className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-semibold shadow-lg hover:bg-primary/90 transition-colors"
