@@ -10,6 +10,7 @@ import logoImg from "@assets/67479162_2414021002167097_5524966927945957376_n_176
 import { useQuery } from "@tanstack/react-query";
 import { type Route } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { QRCodeSVG } from "qrcode.react";
 
 export default function Ticket() {
   const [, params] = useRoute("/ticket/:id");
@@ -144,8 +145,19 @@ export default function Ticket() {
             </div>
 
             <div className="text-center p-4 bg-yellow-50 border border-yellow-100 rounded-xl">
-              <p className="text-xs text-yellow-800 font-medium">
+              <p className="text-xs text-yellow-800 font-medium mb-3">
                 Please arrive 15 minutes before departure. Payment to be made on board.
+              </p>
+              <div className="flex justify-center p-2 bg-white rounded-lg border border-slate-100 inline-block mx-auto shadow-sm">
+                <QRCodeSVG 
+                  value={window.location.href}
+                  size={120}
+                  level="H"
+                  includeMargin={true}
+                />
+              </div>
+              <p className="text-[10px] text-slate-400 mt-2 font-mono uppercase tracking-tighter">
+                Ticket ID: {booking.ticketCode}
               </p>
             </div>
           </div>
