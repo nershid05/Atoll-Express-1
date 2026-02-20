@@ -12,22 +12,24 @@ export default function AdminBookings() {
   const { mutate: updateStatus } = useUpdateBookingStatus();
   const [filter, setFilter] = useState("");
   const [dateFilter, setDateFilter] = useState("");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all");
+  const [tripIdFilter, setTripIdFilter] = useState("");
   const [selectedSlip, setSelectedSlip] = useState<string | null>(null);
 
   const filteredBookings = bookings?.filter(b => {
     const matchesText = b.customerName.toLowerCase().includes(filter.toLowerCase()) || 
                        b.ticketCode.toLowerCase().includes(filter.toLowerCase());
     
-    if (!dateFilter) return matchesText;
-
-    const trip = trips?.find(t => t.id === b.tripId);
-    if (!trip) return matchesText;
-
-    try {
-      return matchesText && trip.departureDate === dateFilter;
-    } catch (e) {
-      return matchesText;
+    const matchesPaymentStatus = paymentStatusFilter === "all" || b.paymentStatus === paymentStatusFilter;
+    const matchesTripId = !tripIdFilter || b.tripId.toString() === tripIdFilter;
+    
+    let matchesDate = true;
+    if (dateFilter) {
+      const trip = trips?.find(t => t.id === b.tripId);
+      matchesDate = trip?.departureDate === dateFilter;
     }
+
+    return matchesText && matchesPaymentStatus && matchesTripId && matchesDate;
   });
 
   const isLoading = bookingsLoading;
@@ -40,33 +42,66 @@ export default function AdminBookings() {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input 
-              placeholder="Search by name or ticket code..." 
-              value={filter}
-              onChange={(e) => setFilter(e.target.value)}
-              className="pl-9 pr-4 py-2 w-full border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
+        <div className="p-4 border-b border-slate-100 flex flex-col gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input 
+                placeholder="Search by name or ticket code..." 
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+                className="pl-9 pr-4 py-2 w-full border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+            <div className="relative w-full sm:w-48">
+              <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input 
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                className="pl-9 pr-4 py-2 w-full border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
           </div>
-          <div className="relative w-full sm:w-48">
-            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <input 
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="pl-9 pr-4 py-2 w-full border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
+          
+          <div className="flex flex-wrap gap-4 items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-400 uppercase">Payment:</span>
+              <select 
+                value={paymentStatusFilter}
+                onChange={(e) => setPaymentStatusFilter(e.target.value)}
+                className="text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20 bg-white"
+              >
+                <option value="all">All Status</option>
+                <option value="paid">Paid</option>
+                <option value="pending">Pending</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-400 uppercase">Trip ID:</span>
+              <input 
+                type="number"
+                placeholder="ID..."
+                value={tripIdFilter}
+                onChange={(e) => setTripIdFilter(e.target.value)}
+                className="w-20 text-sm border rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            {(dateFilter || paymentStatusFilter !== "all" || tripIdFilter) && (
+              <button 
+                onClick={() => {
+                  setDateFilter("");
+                  setPaymentStatusFilter("all");
+                  setTripIdFilter("");
+                }}
+                className="text-xs text-primary font-bold hover:underline flex items-center gap-1"
+              >
+                <X className="h-3 w-3" /> CLEAR FILTERS
+              </button>
+            )}
           </div>
-          {dateFilter && (
-            <button 
-              onClick={() => setDateFilter("")}
-              className="text-xs text-primary font-medium hover:underline self-center"
-            >
-              Clear Date
-            </button>
-          )}
         </div>
 
         {/* Desktop Table View */}
