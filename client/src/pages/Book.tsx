@@ -59,8 +59,13 @@ export default function Book() {
   
   const availableRouteNames = Array.from(new Set(trips?.map(t => t.routeName) || []));
 
+  // Get all unique dates that have active trips
+  const allAvailableDates = Array.from(new Set(
+    trips?.filter(t => t.isActive).map(t => t.departureDate) || []
+  )).sort();
+
   // Get dates that have trips for the selected route
-  const availableDates = trips
+  const routeAvailableDates = trips
     ?.filter(t => t.isActive && (!selectedRouteName || t.routeName === selectedRouteName))
     .map(t => t.departureDate) || [];
 
@@ -73,6 +78,14 @@ export default function Book() {
   const { data: routes } = useQuery<Route[]>({ queryKey: ["/api/routes"] });
   const selectedTrip = trips?.find(t => t.id === selectedTripId);
   const selectedRoute = routes?.find(r => r.name === selectedTrip?.routeName);
+
+  // Auto-select route if a trip is selected but route isn't
+  useEffect(() => {
+    if (selectedTrip && !selectedRouteName) {
+      form.setValue("routeName", selectedTrip.routeName);
+    }
+  }, [selectedTrip, selectedRouteName, form]);
+
   useEffect(() => {
     if (selectedTripId && !filteredTrips.some(t => t.id === selectedTripId)) {
       form.setValue("tripId", 0);
@@ -178,16 +191,27 @@ export default function Book() {
                               const today = new Date();
                               today.setHours(0, 0, 0, 0);
                               const isPast = date < today;
-                              const hasTrip = selectedRouteName ? availableDates.includes(dateStr) : true;
+                              const hasTrip = allAvailableDates.includes(dateStr);
                               return isPast || !hasTrip;
+                            }}
+                            modifiers={{
+                              hasRouteTrip: (date) => {
+                                const dateStr = format(date, "yyyy-MM-dd");
+                                return routeAvailableDates.includes(dateStr);
+                              }
+                            }}
+                            modifiersClassNames={{
+                              hasRouteTrip: "bg-primary/20 text-primary font-bold"
                             }}
                             initialFocus
                           />
                         </PopoverContent>
                       </Popover>
-                      {availableDates.length > 0 && selectedRouteName && (
+                      {allAvailableDates.length > 0 && (
                         <p className="text-[10px] text-muted-foreground italic">
-                          Highlighted dates have available trips for this route.
+                          {selectedRouteName 
+                            ? "Highlighted dates have trips for your selected route. Other enabled dates have trips for different routes."
+                            : "Select a date to see available trips."}
                         </p>
                       )}
                     </div>
