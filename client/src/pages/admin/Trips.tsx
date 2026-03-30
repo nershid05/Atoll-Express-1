@@ -27,6 +27,7 @@ const tripSchema = z.object({
   departureTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "HH:MM format"),
   arrivalTime: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, "HH:MM format"),
   price: z.coerce.number().min(1),
+  onlineSeats: z.union([z.coerce.number().min(1, "Must be at least 1"), z.literal(""), z.null()]).optional().transform(v => (v === "" || v == null) ? null : Number(v)),
   isActive: z.boolean().default(true),
 });
 
@@ -89,6 +90,7 @@ export default function AdminTrips() {
     setEditingTrip(trip);
     form.reset({
       ...trip,
+      onlineSeats: trip.onlineSeats ?? undefined,
       isActive: trip.isActive ?? true
     });
     setIsModalOpen(true);
@@ -201,6 +203,9 @@ export default function AdminTrips() {
                     <td className="p-4">
                       <div className="text-sm text-slate-600 font-medium">{route?.boatName || "Not set"}</div>
                       <div className="text-xs text-slate-400">{route?.capacity || 0} seats total</div>
+                      {trip.onlineSeats != null && (
+                        <div className="text-xs text-primary font-semibold">{trip.onlineSeats} online</div>
+                      )}
                     </td>
                     <td className="p-4 text-sm font-medium">MVR {trip.price}</td>
                     <td className="p-4">
@@ -334,6 +339,26 @@ export default function AdminTrips() {
                   <label className="text-sm font-medium">Price (MVR)</label>
                   <input {...form.register("price")} type="number" className="w-full p-2 border rounded-md" />
                 </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Online Seats</label>
+                  <input 
+                    {...form.register("onlineSeats")} 
+                    type="number" 
+                    min="0"
+                    placeholder="Leave blank = all seats"
+                    className="w-full p-2 border rounded-md" 
+                  />
+                  {form.watch("routeName") && (
+                    <p className="text-[10px] text-slate-400 italic">
+                      Total route capacity: {routes?.find(r => r.name === form.watch("routeName"))?.capacity ?? "—"} seats
+                    </p>
+                  )}
+                  {form.formState.errors.onlineSeats && <p className="text-xs text-destructive">{form.formState.errors.onlineSeats.message}</p>}
+                </div>
+              </div>
+
+              <div className="p-3 bg-blue-50 border border-blue-100 rounded-lg text-xs text-blue-700">
+                <strong>Online Seats:</strong> Set how many seats customers can book online. The remaining seats can be assigned by admin directly. Leave blank to allow all route seats online.
               </div>
 
               <div className="flex items-center gap-2">

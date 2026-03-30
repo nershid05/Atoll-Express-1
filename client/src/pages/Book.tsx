@@ -79,6 +79,12 @@ export default function Book() {
   const selectedTrip = trips?.find(t => t.id === selectedTripId);
   const selectedRoute = routes?.find(r => r.name === selectedTrip?.routeName);
 
+  // Fetch live availability for the selected trip
+  const { data: availability } = useQuery<{ onlineSeatLimit: number; occupied: number; remaining: number }>({
+    queryKey: [`/api/trips/${selectedTripId}/availability`],
+    enabled: !!selectedTripId && selectedTripId > 0,
+  });
+
   // Auto-select route if a trip is selected but route isn't
   useEffect(() => {
     if (selectedTrip && !selectedRouteName) {
@@ -223,31 +229,60 @@ export default function Book() {
                   {/* Trip Selection */}
                   <div className="space-y-2">
                     <label className="text-sm font-medium text-slate-700">Select Trip</label>
-                    <select 
-                      {...form.register("tripId")}
-                      className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
-                    >
-                      {filteredTrips.length > 0 ? (
-                        <>
-                          <option value="0">-- Select a route --</option>
-                          {filteredTrips.map(trip => (
-                            <option key={trip.id} value={trip.id.toString()}>
-                              {trip.routeFrom} → {trip.routeTo} ({trip.departureTime})
-                            </option>
-                          ))}
-                        </>
-                      ) : (
-                        <option value="0">
-                          {selectedDate === new Date().toISOString().split('T')[0] 
-                            ? "Planned trips for today ended" 
-                            : "No trips available for this date"}
-                        </option>
-                      )}
-                    </select>
+                    {filteredTrips.length > 0 ? (
+                      <div className="space-y-2">
+                        {filteredTrips.map(trip => (
+                          <label
+                            key={trip.id}
+                            className={cn(
+                              "flex items-center justify-between p-3 rounded-lg border-2 cursor-pointer transition-all",
+                              Number(form.watch("tripId")) === trip.id
+                                ? "border-primary bg-primary/5"
+                                : "border-slate-200 hover:border-slate-300"
+                            )}
+                          >
+                            <input
+                              type="radio"
+                              value={trip.id.toString()}
+                              {...form.register("tripId")}
+                              className="sr-only"
+                            />
+                            <div>
+                              <div className="font-semibold text-slate-800 text-sm">{trip.routeFrom} → {trip.routeTo}</div>
+                              <div className="text-xs text-slate-500 font-mono">{trip.departureTime} departure</div>
+                            </div>
+                            <div className="text-right text-xs">
+                              <div className="font-bold text-primary">MVR {trip.price}</div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-3 rounded-lg bg-slate-50 border text-sm text-slate-500">
+                        {selectedDate === new Date().toISOString().split('T')[0] 
+                          ? "No trips remaining today" 
+                          : "No trips available for this date"}
+                      </div>
+                    )}
                     {form.formState.errors.tripId && (
                       <p className="text-sm text-destructive">{form.formState.errors.tripId.message}</p>
                     )}
                   </div>
+
+                  {/* Seat Availability Badge */}
+                  {selectedTripId > 0 && availability && (
+                    <div className={cn(
+                      "flex items-center justify-between p-3 rounded-lg border text-sm font-medium",
+                      availability.remaining === 0
+                        ? "bg-red-50 border-red-200 text-red-700"
+                        : availability.remaining <= 5
+                        ? "bg-yellow-50 border-yellow-200 text-yellow-700"
+                        : "bg-green-50 border-green-200 text-green-700"
+                    )}>
+                      <span>Online Seats Available</span>
+                      <span className="font-bold text-lg">{availability.remaining} / {availability.onlineSeatLimit}</span>
+                    </div>
+                  )}
 
                   {/* Personal Details */}
                   <div className="space-y-4">
@@ -301,10 +336,13 @@ export default function Book() {
                       {...form.register("ticketQuantity")}
                       className="w-full p-3 rounded-lg border border-slate-200 bg-white focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary"
                     >
-                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                      {Array.from({ length: Math.min(10, availability?.remaining ?? 10) }, (_, i) => i + 1).map(n => (
                         <option key={n} value={n}>{n} Seat{n > 1 ? 's' : ''}</option>
                       ))}
                     </select>
+                    {availability && availability.remaining === 0 && (
+                      <p className="text-sm text-red-600 font-medium">No online seats available for this trip.</p>
+                    )}
                   </div>
 
                   {/* Payment Method */}
@@ -361,7 +399,7 @@ export default function Book() {
 
                   <button 
                     type="submit"
-                    disabled={isSubmitting || (paymentMethod === "bank_transfer" && !form.watch("paymentSlip"))}
+                    disabled={isSubmitting || (paymentMethod === "bank_transfer" && !form.watch("paymentSlip")) || (!!availability && availability.remaining === 0)}
                     className="w-full py-4 bg-primary text-white rounded-xl font-bold text-lg shadow-lg shadow-primary/25 hover:bg-primary/90 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
                   >
                     {isSubmitting ? (

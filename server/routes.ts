@@ -96,12 +96,17 @@ export async function registerRoutes(
     const route = await storage.getRouteByName(trip.routeName);
     if (!route) return res.status(400).json({ message: "Route configuration not found" });
 
-    // LIVE AVAILABILITY CHECK (Per Route/Date)
-    const routeBookings = await storage.getBookingsByRouteAndDate(trip.routeName, trip.departureDate);
-    const occupiedSeats = routeBookings.reduce((sum, b) => sum + b.ticketQuantity, 0);
+    // LIVE AVAILABILITY CHECK (Per Trip for online seats)
+    const tripBookings = await storage.getBookingsByTrip(trip.id);
+    const activeBookings = tripBookings.filter(b => b.bookingStatus !== 'cancelled');
+    const occupiedOnlineSeats = activeBookings.reduce((sum, b) => sum + b.ticketQuantity, 0);
     
-    if (occupiedSeats + input.ticketQuantity > route.capacity) {
-      return res.status(400).json({ message: `Only ${route.capacity - occupiedSeats} seats remaining for this route on ${trip.departureDate}.` });
+    // Online seat limit: use trip.onlineSeats if set, otherwise fall back to route capacity
+    const onlineSeatLimit = trip.onlineSeats ?? route.capacity;
+    
+    if (occupiedOnlineSeats + input.ticketQuantity > onlineSeatLimit) {
+      const remaining = Math.max(0, onlineSeatLimit - occupiedOnlineSeats);
+      return res.status(400).json({ message: `Only ${remaining} online seat${remaining === 1 ? '' : 's'} remaining for this trip.` });
     }
     
     // Calculate total price
@@ -115,6 +120,18 @@ export async function registerRoutes(
       totalPrice
     });
     res.status(201).json(booking);
+  });
+
+  // Trip availability endpoint
+  app.get("/api/trips/:id/availability", async (req, res) => {
+    const trip = await storage.getTrip(Number(req.params.id));
+    if (!trip) return res.status(404).json({ message: "Trip not found" });
+    const route = await storage.getRouteByName(trip.routeName);
+    const tripBookings = await storage.getBookingsByTrip(trip.id);
+    const activeBookings = tripBookings.filter(b => b.bookingStatus !== 'cancelled');
+    const occupied = activeBookings.reduce((sum, b) => sum + b.ticketQuantity, 0);
+    const onlineSeatLimit = trip.onlineSeats ?? (route?.capacity ?? 0);
+    res.json({ onlineSeatLimit, occupied, remaining: Math.max(0, onlineSeatLimit - occupied) });
   });
 
   app.get(api.bookings.get.path, async (req, res) => {

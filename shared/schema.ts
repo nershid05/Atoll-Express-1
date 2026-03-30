@@ -29,6 +29,7 @@ export const trips = pgTable("trips", {
   departureTime: text("departure_time").notNull(), // HH:MM format
   arrivalTime: text("arrival_time").notNull(), // HH:MM format
   price: integer("price").notNull(), // In MVR
+  onlineSeats: integer("online_seats"), // Seats allocated for online booking (null = use route capacity)
   isActive: boolean("is_active").default(true),
 });
 
