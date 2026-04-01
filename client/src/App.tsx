@@ -20,6 +20,7 @@ import AdminTrips from "@/pages/admin/Trips";
 import AdminBookings from "@/pages/admin/Bookings";
 import AdminTestimonials from "@/pages/admin/Testimonials";
 import AdminMessages from "@/pages/admin/ContactMessages";
+import TripHistory from "@/pages/admin/TripHistory";
 
 function Router() {
   return (
@@ -39,6 +40,7 @@ function Router() {
       <Route path="/admin/bookings" component={AdminBookings} />
       <Route path="/admin/testimonials" component={AdminTestimonials} />
       <Route path="/admin/contact" component={AdminMessages} />
+      <Route path="/admin/trip-history" component={TripHistory} />
 
       <Route component={NotFound} />
     </Switch>

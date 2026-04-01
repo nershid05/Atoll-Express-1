@@ -10,7 +10,8 @@ import {
   LogOut,
   Anchor,
   Menu,
-  X
+  X,
+  History
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
@@ -46,6 +47,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
     { href: "/admin/dashboard", icon: LayoutDashboard, label: "Overview" },
     { href: "/admin/trips", icon: CalendarDays, label: "Schedule & Trips" },
     { href: "/admin/bookings", icon: Ticket, label: "Bookings" },
+    { href: "/admin/trip-history", icon: History, label: "Trip History" },
     { href: "/admin/testimonials", icon: MessageSquare, label: "Testimonials" },
     { href: "/admin/contact", icon: Mail, label: "Messages" },
   ];

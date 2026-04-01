@@ -122,6 +122,58 @@ export async function registerRoutes(
     res.status(201).json(booking);
   });
 
+  // Admin: Past trips history with booking stats
+  app.get("/api/admin/trips/history", requireAdmin, async (req, res) => {
+    const allTrips = await storage.getTrips();
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    const currentTime = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+
+    const pastTrips = allTrips.filter(t => {
+      if (t.departureDate < today) return true;
+      if (t.departureDate === today && t.departureTime <= currentTime) return true;
+      return false;
+    }).sort((a, b) => {
+      if (b.departureDate !== a.departureDate) return b.departureDate.localeCompare(a.departureDate);
+      return b.departureTime.localeCompare(a.departureTime);
+    });
+
+    // Enrich with booking stats
+    const enriched = await Promise.all(pastTrips.map(async trip => {
+      const tripBookings = await storage.getBookingsByTrip(trip.id);
+      const active = tripBookings.filter(b => b.bookingStatus !== 'cancelled');
+      const revenue = active.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+      const passengers = active.reduce((sum, b) => sum + b.ticketQuantity, 0);
+      const paid = active.filter(b => b.paymentStatus === 'paid').length;
+      return { ...trip, stats: { totalBookings: active.length, passengers, revenue, paidCount: paid, pendingCount: active.length - paid } };
+    }));
+
+    res.json(enriched);
+  });
+
+  // Admin: Export trip bookings as CSV
+  app.get("/api/admin/trips/:id/export", requireAdmin, async (req, res) => {
+    const trip = await storage.getTrip(Number(req.params.id));
+    if (!trip) return res.status(404).json({ message: "Trip not found" });
+    const tripBookings = await storage.getBookingsByTrip(trip.id);
+    const active = tripBookings.filter(b => b.bookingStatus !== 'cancelled');
+
+    const rows = [
+      ["Ticket Code", "Customer Name", "Phone", "Email", "Seats", "Total (MVR)", "Payment Method", "Payment Status", "Booking Status", "Booked At"],
+      ...active.map(b => [
+        b.ticketCode, b.customerName, b.customerPhone, b.customerEmail,
+        b.ticketQuantity, b.totalPrice, b.paymentMethod || "cash",
+        b.paymentStatus || "pending", b.bookingStatus || "confirmed",
+        b.createdAt ? new Date(b.createdAt).toLocaleString() : ""
+      ])
+    ];
+
+    const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="trip-${trip.id}-${trip.departureDate}-manifest.csv"`);
+    res.send(csv);
+  });
+
   // Trip availability endpoint
   app.get("/api/trips/:id/availability", async (req, res) => {
     const trip = await storage.getTrip(Number(req.params.id));
