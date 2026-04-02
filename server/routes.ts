@@ -12,6 +12,7 @@ export async function registerRoutes(
   app: Express
 ): Promise<Server> {
   // Setup session + local auth FIRST
+  app.set("trust proxy", 1);
   app.use(getSession());
   const passportLib = await import("passport");
   app.use(passportLib.default.initialize());
