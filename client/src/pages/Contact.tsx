@@ -1,5 +1,6 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { useCreateContactMessage } from "@/hooks/use-contact";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -28,6 +29,12 @@ export default function Contact() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
+      <SEO
+        title="Contact Us – Yoosufspeed Maldives"
+        description="Get in touch with Yoosufspeed for bookings, enquiries, and support. We operate fast ferry services from Malé and Hulhumalé to Baa Atoll islands."
+        keywords="yoosufspeed contact, maldives ferry contact, baa atoll boat service contact, speedboat booking enquiry"
+        canonical="https://yoosuf.mv/contact"
+      />
       <Navigation />
       
       <main className="flex-1 py-12 md:py-24">

@@ -1,3 +1,4 @@
+import { SEO } from "@/components/SEO";
 import { useBooking } from "@/hooks/use-bookings";
 import { useTrip } from "@/hooks/use-trips";
 import { useRoute } from "wouter";
@@ -79,6 +80,7 @@ export default function Ticket() {
 
   return (
     <div className="min-h-screen bg-slate-100 py-12 px-4 print:bg-white print:p-0">
+      <SEO title="Your E-Ticket" description="Your Yoosufspeed ferry booking e-ticket." noIndex />
       <div className="max-w-md mx-auto print:max-w-none print:w-full">
         {/* Ticket Card */}
         <div ref={ticketRef} className="bg-white rounded-3xl shadow-xl overflow-hidden print:shadow-none print:border print:border-slate-300">

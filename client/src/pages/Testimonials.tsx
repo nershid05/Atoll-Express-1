@@ -1,5 +1,6 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { useTestimonials, useCreateTestimonial } from "@/hooks/use-testimonials";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,6 +31,12 @@ export default function Testimonials() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
+      <SEO
+        title="Passenger Reviews & Testimonials"
+        description="Read honest reviews from our passengers. Yoosufspeed delivers a fast, comfortable speedboat service between Malé and Baa Atoll in the Maldives."
+        keywords="yoosufspeed reviews, maldives ferry testimonials, baa atoll speedboat reviews, passenger feedback"
+        canonical="https://yoosuf.mv/testimonials"
+      />
       <Navigation />
       
       <main className="flex-1">

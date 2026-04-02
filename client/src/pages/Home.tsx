@@ -1,5 +1,6 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { Link } from "wouter";
 import { ArrowRight, Clock, ShieldCheck, Ship, Star, Quote } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -18,6 +19,12 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans">
+      <SEO
+        title="Fast Ferry Service | Malé to Baa Atoll, Maldives"
+        description="Book your speedboat seat from Malé City & Hulhumalé to Baa Atoll (Kendhoo, Kudarikilu, Maalhos, Eydhafushi). Fast, comfortable, and reliable ferry service in the Maldives."
+        keywords="maldives ferry, baa atoll speedboat, male to baa atoll, yoosufspeed, hulhumale ferry, eydhafushi speedboat, kendhoo ferry, maldives transport"
+        canonical="https://yoosuf.mv"
+      />
       <Navigation />
       
       {/* Hero Section */}

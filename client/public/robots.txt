@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+Allow: /schedule
+Allow: /book
+Allow: /testimonials
+Allow: /contact
+
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://yoosuf.mv/sitemap.xml

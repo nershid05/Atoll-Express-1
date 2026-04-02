@@ -1,5 +1,6 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { useTrips } from "@/hooks/use-trips";
 import { Link } from "wouter";
 import { ArrowRight, Loader2, MapPin, Calendar } from "lucide-react";
@@ -13,6 +14,12 @@ export default function Schedule() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
+      <SEO
+        title="Ferry Schedule – Malé to Baa Atoll"
+        description="View real-time speedboat ferry schedules from Malé City and Hulhumalé to Baa Atoll islands (Eydhafushi, Kendhoo, Kudarikilu, Maalhos). Check departure times and book your seat online."
+        keywords="maldives ferry schedule, male baa atoll timetable, eydhafushi speedboat times, hulhumale ferry schedule, baa atoll departure times"
+        canonical="https://yoosuf.mv/schedule"
+      />
       <Navigation />
       
       <main className="flex-1 container px-4 py-12">

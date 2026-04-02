@@ -1,5 +1,6 @@
 import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
+import { SEO } from "@/components/SEO";
 import { useTrips } from "@/hooks/use-trips";
 import { useCreateBooking } from "@/hooks/use-bookings";
 import { useLocation, useSearch } from "wouter";
@@ -135,6 +136,12 @@ export default function Book() {
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-50">
+      <SEO
+        title="Book a Ferry Seat Online"
+        description="Book your speedboat seat online in minutes. Travel from Malé or Hulhumalé to Eydhafushi, Kendhoo, Kudarikilu, or Maalhos. E-ticket sent instantly. Pay on board or by bank transfer."
+        keywords="book maldives ferry, baa atoll ticket, male eydhafushi booking, hulhumale speedboat booking, online ferry reservation maldives"
+        canonical="https://yoosuf.mv/book"
+      />
       <Navigation />
       
       <main className="flex-1 container px-4 py-12">
