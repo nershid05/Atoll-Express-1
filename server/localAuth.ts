@@ -21,13 +21,16 @@ export async function seedAdminUser() {
       isAdmin: true,
       password: hashed,
     });
-    console.log(`[auth] Admin user seeded: ${ADMIN_EMAIL}`);
+    console.log(`[auth] Admin user created: ${ADMIN_EMAIL}`);
   } else {
-    // Re-hash on every startup so password env var changes take effect
-    const hashed = await bcrypt.hash(password, 12);
-    await db.update(users)
-      .set({ password: hashed, isAdmin: true, updatedAt: new Date() })
-      .where(eq(users.id, ADMIN_ID));
+    // Only re-hash if ADMIN_PASSWORD env var is set (i.e. password was intentionally changed)
+    if (process.env.ADMIN_PASSWORD) {
+      const hashed = await bcrypt.hash(password, 12);
+      await db.update(users)
+        .set({ password: hashed, isAdmin: true, updatedAt: new Date() })
+        .where(eq(users.id, ADMIN_ID));
+      console.log(`[auth] Admin password updated from ADMIN_PASSWORD env var`);
+    }
   }
 }
 
