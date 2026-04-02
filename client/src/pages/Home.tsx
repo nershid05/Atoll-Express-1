@@ -6,6 +6,8 @@ import { useQuery } from "@tanstack/react-query";
 import { type Testimonial } from "@shared/schema";
 
 import heroImg from "@assets/WhatsApp_Image_2026-01-21_at_03.57.08_1768949857607.jpeg";
+import boatImg1 from "@assets/fleet_boat_1.png";
+import boatImg2 from "@assets/fleet_boat_2.png";
 
 export default function Home() {
   const { data: testimonials } = useQuery<Testimonial[]>({
@@ -140,6 +142,51 @@ export default function Home() {
           >
             Book Now
           </Link>
+        </div>
+      </section>
+
+      {/* Our Fleet */}
+      <section className="py-24 bg-slate-50">
+        <div className="container px-4">
+          <div className="text-center mb-14">
+            <span className="inline-block bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">Our Fleet</span>
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-slate-900 mb-4">Meet Our Speedboats</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Six modern speedboats ready to carry you across the Indian Ocean in comfort and style.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[
+              { name: "Yoosuf Emperor", img: boatImg1 },
+              { name: "Yoosuf Rasgefaanu", img: boatImg2 },
+              { name: "Yoosuf Empire", img: boatImg1 },
+              { name: "Yoosuf Empower", img: boatImg2 },
+              { name: "Yoosuf Explorer", img: boatImg1 },
+              { name: "Yoosuf Eros", img: boatImg2 },
+            ].map((boat) => (
+              <div
+                key={boat.name}
+                className="group relative overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+              >
+                <div className="aspect-[4/3] overflow-hidden">
+                  <img
+                    src={boat.img}
+                    alt={boat.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-5">
+                  <div className="flex items-center gap-2">
+                    <Ship className="h-4 w-4 text-primary flex-shrink-0" />
+                    <h3 className="text-white font-bold text-lg tracking-tight">{boat.name}</h3>
+                  </div>
+                  <p className="text-slate-300 text-xs mt-1 ml-6">Yoosufspeed Ferry Service</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

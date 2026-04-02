@@ -1,0 +1,14 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "aFrrvTq9E5CCJthqQJd0O"
+uri = "file://attached_assets/fleet_boat_1.png"
+type = "image"
+title = "speedboat fleet maldives"
+
+[[generated]]
+id = "-WQc3kfknUINRw7qoGrHf"
+uri = "file://attached_assets/fleet_boat_2.png"
+type = "image"
+title = "speedboat blue sea aerial"
