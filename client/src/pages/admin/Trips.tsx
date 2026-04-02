@@ -1,14 +1,15 @@
 import { AdminLayout } from "@/components/AdminLayout";
 import { useTrips, useCreateTrip, useDeleteTrip, useUpdateTrip } from "@/hooks/use-trips";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Plus, Trash2, Edit2, X, Ship, Settings2 } from "lucide-react";
+import { Plus, Trash2, Edit2, X, Ship, Settings2, FileSpreadsheet, Download, Upload, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { type Trip, type Route } from "@shared/schema";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import * as XLSX from "xlsx";
 
 // Route Management Schema
 const routeSchema = z.object({
@@ -53,8 +54,156 @@ export default function AdminTrips() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isRouteModalOpen, setIsRouteModalOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [editingTrip, setEditingTrip] = useState<Trip | null>(null);
   const [editingRoute, setEditingRoute] = useState<Route | null>(null);
+  const [importRows, setImportRows] = useState<any[]>([]);
+  const [importErrors, setImportErrors] = useState<string[]>([]);
+  const [importResult, setImportResult] = useState<{ created: number; failed: any[] } | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  type ParsedRow = {
+    routeName: string; routeFrom: string; routeTo: string;
+    departureDate: string; departureTime: string; arrivalTime: string;
+    price: number; onlineSeats: number | null; isActive: boolean;
+    _valid: boolean; _errors: string[];
+  };
+
+  const parseExcelDate = (val: any): string => {
+    if (!val) return "";
+    if (typeof val === "number") {
+      const date = XLSX.SSF.parse_date_code(val);
+      if (date) {
+        const mm = String(date.m).padStart(2, "0");
+        const dd = String(date.d).padStart(2, "0");
+        return `${date.y}-${mm}-${dd}`;
+      }
+    }
+    const s = String(val).trim();
+    // Try DD/MM/YYYY
+    const ddmm = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (ddmm) return `${ddmm[3]}-${ddmm[2].padStart(2,"0")}-${ddmm[1].padStart(2,"0")}`;
+    return s;
+  };
+
+  const parseExcelTime = (val: any): string => {
+    if (!val) return "";
+    if (typeof val === "number" && val < 1) {
+      const totalMinutes = Math.round(val * 24 * 60);
+      const h = Math.floor(totalMinutes / 60);
+      const m = totalMinutes % 60;
+      return `${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}`;
+    }
+    return String(val).trim().substring(0, 5);
+  };
+
+  const parseExcelFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      try {
+        const data = new Uint8Array(e.target!.result as ArrayBuffer);
+        const workbook = XLSX.read(data, { type: "array", cellDates: false });
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const json: any[] = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+        if (json.length < 2) { setImportErrors(["File appears to be empty or has no data rows."]); return; }
+
+        const headers = (json[0] as string[]).map(h => String(h).trim().toLowerCase());
+        const colIdx = (name: string) => headers.findIndex(h => h.includes(name));
+
+        const ci = {
+          routeName: colIdx("route name"),
+          routeFrom: colIdx("from"),
+          routeTo: colIdx("to"),
+          date: colIdx("date"),
+          dep: colIdx("departure"),
+          arr: colIdx("arrival"),
+          price: colIdx("price"),
+          online: colIdx("online"),
+          active: colIdx("active"),
+        };
+
+        const parsed: ParsedRow[] = [];
+        const errors: string[] = [];
+
+        for (let i = 1; i < json.length; i++) {
+          const row: any[] = json[i];
+          if (!row || row.every(c => c == null || c === "")) continue;
+
+          const rowErrors: string[] = [];
+          const routeName = ci.routeName >= 0 ? String(row[ci.routeName] ?? "").trim() : "";
+          const routeFrom = ci.routeFrom >= 0 ? String(row[ci.routeFrom] ?? "").trim() : "";
+          const routeTo = ci.routeTo >= 0 ? String(row[ci.routeTo] ?? "").trim() : "";
+          const departureDate = parseExcelDate(ci.date >= 0 ? row[ci.date] : "");
+          const departureTime = parseExcelTime(ci.dep >= 0 ? row[ci.dep] : "");
+          const arrivalTime = parseExcelTime(ci.arr >= 0 ? row[ci.arr] : "");
+          const price = ci.price >= 0 ? Number(row[ci.price]) : 0;
+          const onlineSeats = ci.online >= 0 && row[ci.online] != null && row[ci.online] !== "" ? Number(row[ci.online]) : null;
+          const activeRaw = ci.active >= 0 ? String(row[ci.active] ?? "yes").toLowerCase() : "yes";
+          const isActive = !["no", "false", "0", "inactive"].includes(activeRaw);
+
+          if (!routeName) rowErrors.push("Route Name missing");
+          if (!routeFrom) rowErrors.push("From missing");
+          if (!routeTo) rowErrors.push("To missing");
+          if (!departureDate || !/^\d{4}-\d{2}-\d{2}$/.test(departureDate)) rowErrors.push(`Invalid date: "${departureDate}"`);
+          if (!departureTime || !/^\d{2}:\d{2}$/.test(departureTime)) rowErrors.push(`Invalid departure time: "${departureTime}"`);
+          if (!arrivalTime || !/^\d{2}:\d{2}$/.test(arrivalTime)) rowErrors.push(`Invalid arrival time: "${arrivalTime}"`);
+          if (!price || isNaN(price) || price <= 0) rowErrors.push("Price must be > 0");
+
+          if (rowErrors.length > 0) errors.push(`Row ${i + 1}: ${rowErrors.join(", ")}`);
+
+          parsed.push({ routeName, routeFrom, routeTo, departureDate, departureTime, arrivalTime, price, onlineSeats, isActive, _valid: rowErrors.length === 0, _errors: rowErrors });
+        }
+
+        setImportRows(parsed);
+        setImportErrors(errors);
+        setImportResult(null);
+      } catch (err) {
+        setImportErrors([`Failed to parse file: ${err}`]);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+
+  const downloadTemplate = () => {
+    const today = new Date();
+    const rows = [
+      ["Route Name", "From", "To", "Date", "Departure Time", "Arrival Time", "Price", "Online Seats", "Active"],
+    ];
+    // Generate 7 sample rows (one per day for a week)
+    for (let i = 0; i < 7; i++) {
+      const d = new Date(today);
+      d.setDate(today.getDate() + i);
+      const dateStr = d.toISOString().split("T")[0];
+      rows.push(["Male - Baa Atoll", "Male", "Eydhafushi", dateStr, "07:00", "09:30", "500", "40", "yes"]);
+      rows.push(["Baa Atoll - Male", "Eydhafushi", "Male", dateStr, "14:00", "16:30", "500", "40", "yes"]);
+    }
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws["!cols"] = [14,12,12,12,16,12,8,14,8].map(w => ({ wch: w }));
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Schedule");
+    XLSX.writeFile(wb, "yoosufspeed-schedule-template.xlsx");
+  };
+
+  const bulkImportMutation = useMutation({
+    mutationFn: async (rows: ParsedRow[]) => {
+      const res = await apiRequest("POST", "/api/admin/trips/bulk", rows.filter(r => r._valid));
+      return res.json();
+    },
+    onSuccess: (data) => {
+      setImportResult(data);
+      queryClient.invalidateQueries({ queryKey: ["/api/trips"] });
+      toast({ title: `Imported ${data.created} trip${data.created !== 1 ? "s" : ""} successfully!` });
+    },
+    onError: () => toast({ title: "Import failed", variant: "destructive" })
+  });
+
+  const resetImport = () => {
+    setImportRows([]);
+    setImportErrors([]);
+    setImportResult(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const form = useForm<TripFormValues>({
     resolver: zodResolver(tripSchema),
@@ -128,17 +277,25 @@ export default function AdminTrips() {
 
   return (
     <AdminLayout>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Manage Schedule</h1>
           <p className="text-slate-500">Configure routes, boats and trips.</p>
         </div>
-        <button 
-          onClick={openCreate}
-          className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors"
-        >
-          <Plus className="h-4 w-4" /> Add Trip
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => { resetImport(); setIsImportModalOpen(true); }}
+            className="flex items-center gap-2 border border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary/5 transition-colors text-sm font-semibold"
+          >
+            <FileSpreadsheet className="h-4 w-4" /> Import Excel
+          </button>
+          <button 
+            onClick={openCreate}
+            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/90 transition-colors text-sm font-semibold"
+          >
+            <Plus className="h-4 w-4" /> Add Trip
+          </button>
+        </div>
       </div>
 
       {/* Routes Configuration Section */}
@@ -232,6 +389,166 @@ export default function AdminTrips() {
           </table>
         </div>
       </div>
+
+      {/* Excel Import Modal */}
+      {isImportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl w-full max-w-4xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+            <div className="flex justify-between items-center p-6 border-b border-slate-100 flex-shrink-0">
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <FileSpreadsheet className="h-5 w-5 text-primary" /> Import Schedule from Excel
+                </h2>
+                <p className="text-sm text-slate-500 mt-1">Upload a .xlsx or .csv file to bulk-create trips for any period.</p>
+              </div>
+              <button onClick={() => setIsImportModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto flex-1 p-6 space-y-5">
+              {/* Template Download */}
+              <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                <div>
+                  <p className="text-sm font-semibold text-blue-800">Need a template?</p>
+                  <p className="text-xs text-blue-600 mt-0.5">Download our pre-filled Excel template with the correct column format and 2 weeks of sample data.</p>
+                </div>
+                <button
+                  onClick={downloadTemplate}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-semibold flex-shrink-0 ml-4"
+                >
+                  <Download className="h-4 w-4" /> Template
+                </button>
+              </div>
+
+              {/* File Upload Zone */}
+              {!importResult && (
+                <div
+                  className={`border-2 border-dashed rounded-xl p-10 text-center transition-colors cursor-pointer ${isDragOver ? "border-primary bg-primary/5" : "border-slate-200 hover:border-primary/50"}`}
+                  onDragOver={e => { e.preventDefault(); setIsDragOver(true); }}
+                  onDragLeave={() => setIsDragOver(false)}
+                  onDrop={e => {
+                    e.preventDefault();
+                    setIsDragOver(false);
+                    const file = e.dataTransfer.files[0];
+                    if (file) parseExcelFile(file);
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <Upload className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                  <p className="font-semibold text-slate-600">Drop your Excel file here, or click to browse</p>
+                  <p className="text-xs text-slate-400 mt-1">Supports .xlsx, .xls, .csv</p>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".xlsx,.xls,.csv"
+                    className="hidden"
+                    onChange={e => { const f = e.target.files?.[0]; if (f) parseExcelFile(f); }}
+                  />
+                </div>
+              )}
+
+              {/* Import Result */}
+              {importResult && (
+                <div className={`p-5 rounded-xl border ${importResult.failed.length === 0 ? "bg-green-50 border-green-200" : "bg-amber-50 border-amber-200"}`}>
+                  <div className="flex items-center gap-3 mb-2">
+                    <CheckCircle2 className={`h-6 w-6 ${importResult.failed.length === 0 ? "text-green-600" : "text-amber-600"}`} />
+                    <h3 className={`font-bold text-lg ${importResult.failed.length === 0 ? "text-green-800" : "text-amber-800"}`}>
+                      Import Complete
+                    </h3>
+                  </div>
+                  <p className="text-sm text-slate-700"><strong>{importResult.created}</strong> trip{importResult.created !== 1 ? "s" : ""} created successfully.</p>
+                  {importResult.failed.length > 0 && (
+                    <p className="text-sm text-red-600 mt-1"><strong>{importResult.failed.length}</strong> row{importResult.failed.length !== 1 ? "s" : ""} failed. Check that all required fields are correct.</p>
+                  )}
+                  <button onClick={resetImport} className="mt-3 text-sm text-primary font-semibold hover:underline">Import another file</button>
+                </div>
+              )}
+
+              {/* Validation Errors Summary */}
+              {importErrors.length > 0 && !importResult && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-sm font-bold text-red-700 flex items-center gap-2 mb-2">
+                    <AlertCircle className="h-4 w-4" /> {importErrors.length} row{importErrors.length !== 1 ? "s have" : " has"} errors — fix in Excel and re-upload, or rows will be skipped.
+                  </p>
+                  <ul className="text-xs text-red-600 space-y-0.5 max-h-24 overflow-y-auto">
+                    {importErrors.map((e, i) => <li key={i}>• {e}</li>)}
+                  </ul>
+                </div>
+              )}
+
+              {/* Preview Table */}
+              {importRows.length > 0 && !importResult && (
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-sm font-semibold text-slate-700">
+                      Preview — {importRows.filter(r => r._valid).length} valid / {importRows.filter(r => !r._valid).length} invalid out of {importRows.length} rows
+                    </p>
+                  </div>
+                  <div className="overflow-x-auto border rounded-xl">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-slate-50 text-slate-500">
+                        <tr>
+                          <th className="px-3 py-2">#</th>
+                          <th className="px-3 py-2">Route</th>
+                          <th className="px-3 py-2">From → To</th>
+                          <th className="px-3 py-2">Date</th>
+                          <th className="px-3 py-2">Departure</th>
+                          <th className="px-3 py-2">Arrival</th>
+                          <th className="px-3 py-2">Price</th>
+                          <th className="px-3 py-2">Online</th>
+                          <th className="px-3 py-2">Active</th>
+                          <th className="px-3 py-2">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {importRows.map((row, i) => (
+                          <tr key={i} className={row._valid ? "bg-white" : "bg-red-50"}>
+                            <td className="px-3 py-2 text-slate-400">{i + 2}</td>
+                            <td className="px-3 py-2 font-medium">{row.routeName || <span className="text-red-400 italic">missing</span>}</td>
+                            <td className="px-3 py-2">{row.routeFrom} → {row.routeTo}</td>
+                            <td className="px-3 py-2 font-mono">{row.departureDate}</td>
+                            <td className="px-3 py-2 font-mono">{row.departureTime}</td>
+                            <td className="px-3 py-2 font-mono">{row.arrivalTime}</td>
+                            <td className="px-3 py-2">MVR {row.price}</td>
+                            <td className="px-3 py-2">{row.onlineSeats ?? "All"}</td>
+                            <td className="px-3 py-2">{row.isActive ? "Yes" : "No"}</td>
+                            <td className="px-3 py-2">
+                              {row._valid
+                                ? <span className="text-green-600 font-bold">✓ Valid</span>
+                                : <span className="text-red-500 font-bold" title={row._errors.join(", ")}>✗ {row._errors[0]}</span>}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Footer */}
+            {importRows.length > 0 && !importResult && (
+              <div className="p-6 border-t border-slate-100 flex justify-between items-center flex-shrink-0 bg-white">
+                <p className="text-sm text-slate-500">
+                  {importRows.filter(r => !r._valid).length > 0 && "Invalid rows will be skipped. "}
+                  {importRows.filter(r => r._valid).length} trip{importRows.filter(r => r._valid).length !== 1 ? "s" : ""} will be created.
+                </p>
+                <div className="flex gap-3">
+                  <button onClick={resetImport} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg text-sm">Clear</button>
+                  <button
+                    onClick={() => bulkImportMutation.mutate(importRows)}
+                    disabled={bulkImportMutation.isPending || importRows.filter(r => r._valid).length === 0}
+                    className="flex items-center gap-2 px-5 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    {bulkImportMutation.isPending ? <><Loader2 className="h-4 w-4 animate-spin" /> Importing...</> : <><Upload className="h-4 w-4" /> Import {importRows.filter(r => r._valid).length} Trips</>}
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Route Edit Modal */}
       {isRouteModalOpen && (

@@ -86,6 +86,40 @@ export async function registerRoutes(
     res.status(204).send();
   });
 
+  // Bulk create trips from Excel import
+  app.post("/api/admin/trips/bulk", requireAdmin, async (req, res) => {
+    const rows = req.body as Array<{
+      routeName: string; routeFrom: string; routeTo: string;
+      departureDate: string; departureTime: string; arrivalTime: string;
+      price: number; onlineSeats?: number | null; isActive?: boolean;
+    }>;
+    if (!Array.isArray(rows) || rows.length === 0) {
+      return res.status(400).json({ message: "No trip data provided" });
+    }
+    const created: any[] = [];
+    const failed: Array<{ row: number; reason: string }> = [];
+    for (let i = 0; i < rows.length; i++) {
+      const r = rows[i];
+      try {
+        const trip = await storage.createTrip({
+          routeName: r.routeName,
+          routeFrom: r.routeFrom,
+          routeTo: r.routeTo,
+          departureDate: r.departureDate,
+          departureTime: r.departureTime,
+          arrivalTime: r.arrivalTime,
+          price: Number(r.price),
+          onlineSeats: r.onlineSeats != null ? Number(r.onlineSeats) : null,
+          isActive: r.isActive !== false,
+        });
+        created.push(trip);
+      } catch (e: any) {
+        failed.push({ row: i + 2, reason: e?.message || "Unknown error" });
+      }
+    }
+    res.status(201).json({ created: created.length, failed });
+  });
+
   // Bookings
   app.post(api.bookings.create.path, async (req, res) => {
     const input = api.bookings.create.input.parse(req.body);
