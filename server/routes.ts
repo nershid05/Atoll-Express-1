@@ -1,7 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, registerAuthRoutes } from "./replit_integrations/auth";
+import { getSession } from "./replit_integrations/auth";
+import { setupLocalAuth, requireAdmin, seedAdminUser } from "./localAuth";
 import { api } from "@shared/routes";
 import { z } from "zod";
 import { randomBytes } from "crypto";
@@ -10,41 +11,13 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // Setup Auth FIRST
-  await setupAuth(app);
-  registerAuthRoutes(app);
-
-  // Helper to check admin
-  const requireAdmin = (req: any, res: any, next: any) => {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-    // For simplicity in this MVP, we can allow any authenticated user to be admin 
-    // OR check the isAdmin flag. Let's check the flag.
-    // However, Replit Auth blueprint uses a separate User model in auth/storage.ts
-    // We need to fetch the full user from our extended schema to check isAdmin.
-    // The req.user from passport might not have isAdmin if it came from session.
-    // Let's refetch or assume req.user is populated by storage.getUser which returns User.
-    // The storage implementation in auth/storage.ts returns User from @shared/models/auth.
-    // And @shared/models/auth has isAdmin. So req.user should have it?
-    // Actually passport deserializeUser just passes the session object usually or calls getUser.
-    // In replitAuth.ts: passport.deserializeUser((user: Express.User, cb) => cb(null, user)); 
-    // It deserializes what was serialized. 
-    // And verify function: verified(null, user) where user has claims.
-    // So req.user only has claims from the token unless we change it.
-    // Let's fetch user from DB in the middleware.
-    
-    const userId = (req.user as any).claims?.sub;
-    storage.getUser(userId).then(user => {
-      // In a real app, strict admin check. For this demo, we'll allow all logged in users to be admin
-      // to make it easy for the user to test.
-      // BUT user asked for "separate login". Replit auth restricts to Replit users.
-      // Let's assume ANY logged in user is admin for now.
-      next();
-    }).catch(err => {
-      res.status(500).json({ message: "Internal Server Error" });
-    });
-  };
+  // Setup session + local auth FIRST
+  app.use(getSession());
+  const passportLib = await import("passport");
+  app.use(passportLib.default.initialize());
+  app.use(passportLib.default.session());
+  setupLocalAuth(app);
+  await seedAdminUser();
 
   // Trips
   app.get(api.trips.list.path, async (req, res) => {
