@@ -189,6 +189,7 @@ export default function AdminBookings() {
                       <thead className="bg-slate-50 text-slate-500 text-xs uppercase">
                         <tr>
                           <th className="px-4 py-3 font-semibold">Ticket</th>
+                          <th className="px-4 py-3 font-semibold">Route</th>
                           <th className="px-4 py-3 font-semibold">Customer</th>
                           <th className="px-4 py-3 font-semibold">Contact</th>
                           <th className="px-4 py-3 font-semibold">Seats</th>
@@ -202,6 +203,15 @@ export default function AdminBookings() {
                         {tripBookings.map(booking => (
                           <tr key={booking.id} className="hover:bg-slate-50/60 transition-colors">
                             <td className="px-4 py-3 font-mono font-medium text-slate-800">{booking.ticketCode}</td>
+                            <td className="px-4 py-3">
+                              {trip ? (
+                                <div className="flex items-center gap-1 text-sm font-medium text-slate-700 whitespace-nowrap">
+                                  <span>{trip.routeFrom}</span>
+                                  <span className="text-slate-400">→</span>
+                                  <span>{trip.routeTo}</span>
+                                </div>
+                              ) : <span className="text-slate-400 text-xs">—</span>}
+                            </td>
                             <td className="px-4 py-3 font-medium text-slate-900">{booking.customerName}</td>
                             <td className="px-4 py-3 text-slate-500">
                               <div>{booking.customerPhone}</div>
@@ -270,6 +280,13 @@ export default function AdminBookings() {
                             <div className="font-mono font-bold text-slate-800 text-sm">{booking.ticketCode}</div>
                             <div className="font-semibold text-slate-900">{booking.customerName}</div>
                             <div className="text-xs text-slate-400">{booking.customerPhone}</div>
+                            {trip && (
+                              <div className="flex items-center gap-1 text-xs font-semibold text-primary mt-0.5">
+                                <span>{trip.routeFrom}</span>
+                                <span className="text-slate-400">→</span>
+                                <span>{trip.routeTo}</span>
+                              </div>
+                            )}
                           </div>
                           <div className="flex flex-col items-end gap-1">
                             <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
