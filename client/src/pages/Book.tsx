@@ -286,8 +286,8 @@ export default function Book() {
                         ? "bg-yellow-50 border-yellow-200 text-yellow-700"
                         : "bg-green-50 border-green-200 text-green-700"
                     )}>
-                      <span>Online Seats Available</span>
-                      <span className="font-bold text-lg">{availability.remaining} / {availability.onlineSeatLimit}</span>
+                      <span>Seats Remaining</span>
+                      <span className="font-bold text-lg">{availability.remaining}</span>
                     </div>
                   )}
 
