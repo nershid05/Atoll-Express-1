@@ -2,7 +2,7 @@ import { Navigation } from "@/components/Navigation";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { Link } from "wouter";
-import { ArrowRight, Clock, ShieldCheck, Ship, Star, Quote } from "lucide-react";
+import { ArrowRight, Clock, ShieldCheck, Ship, Star, Quote, Anchor, CalendarDays, Zap } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { type Testimonial } from "@shared/schema";
 
@@ -137,18 +137,76 @@ export default function Home() {
       )}
 
       {/* CTA */}
-      <section className="py-20 bg-primary text-white">
-        <div className="container px-4 text-center">
-          <h2 className="text-3xl md:text-4xl font-display font-bold mb-6">Ready to travel?</h2>
-          <p className="text-blue-100 text-lg mb-10 max-w-2xl mx-auto">
-            Book your seat online in less than 2 minutes. Receive your e-ticket instantly and pay on delivery.
+      <section className="relative py-24 overflow-hidden bg-gradient-to-br from-primary via-blue-600 to-blue-800 text-white">
+        {/* Decorative background blobs */}
+        <div className="absolute inset-0 pointer-events-none select-none">
+          <div className="absolute -top-32 -left-32 h-[500px] w-[500px] rounded-full bg-white/5 blur-3xl" />
+          <div className="absolute -bottom-32 -right-32 h-[500px] w-[500px] rounded-full bg-blue-400/10 blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-72 w-72 rounded-full bg-white/5 blur-2xl" />
+        </div>
+
+        <div className="relative container px-4 text-center max-w-3xl mx-auto">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium text-blue-100 mb-8">
+            <Anchor className="h-3.5 w-3.5" />
+            Daily sailings across the Maldives
+          </div>
+
+          <h2 className="text-4xl md:text-5xl font-display font-bold mb-5 leading-tight">
+            Ready to travel?
+          </h2>
+          <p className="text-blue-100 text-lg md:text-xl mb-12 max-w-xl mx-auto leading-relaxed">
+            Book your seat in under 2 minutes. Get your e-ticket instantly and pay on board.
           </p>
-          <Link 
-            href="/book" 
-            className="inline-flex items-center justify-center h-14 px-10 rounded-full bg-white text-primary font-bold text-lg hover:bg-blue-50 transition-all shadow-xl"
-          >
-            Book Now
-          </Link>
+
+          {/* Stats */}
+          <div className="flex flex-wrap justify-center gap-x-10 gap-y-4 mb-12">
+            <div className="flex items-center gap-2.5">
+              <div className="h-9 w-9 rounded-lg bg-white/10 flex items-center justify-center">
+                <Ship className="h-4 w-4 text-white" />
+              </div>
+              <div className="text-left">
+                <div className="text-lg font-bold leading-none">6</div>
+                <div className="text-xs text-blue-200 mt-0.5">Speedboats</div>
+              </div>
+            </div>
+            <div className="hidden sm:block w-px bg-white/20" />
+            <div className="flex items-center gap-2.5">
+              <div className="h-9 w-9 rounded-lg bg-white/10 flex items-center justify-center">
+                <CalendarDays className="h-4 w-4 text-white" />
+              </div>
+              <div className="text-left">
+                <div className="text-lg font-bold leading-none">Daily</div>
+                <div className="text-xs text-blue-200 mt-0.5">Departures</div>
+              </div>
+            </div>
+            <div className="hidden sm:block w-px bg-white/20" />
+            <div className="flex items-center gap-2.5">
+              <div className="h-9 w-9 rounded-lg bg-white/10 flex items-center justify-center">
+                <Zap className="h-4 w-4 text-white" />
+              </div>
+              <div className="text-left">
+                <div className="text-lg font-bold leading-none">Instant</div>
+                <div className="text-xs text-blue-200 mt-0.5">E-Ticket</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Buttons */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/book"
+              className="inline-flex items-center justify-center gap-2 h-14 px-10 rounded-full bg-white text-primary font-bold text-lg hover:bg-blue-50 hover:-translate-y-0.5 transition-all shadow-xl hover:shadow-2xl"
+            >
+              Book Now <ArrowRight className="h-5 w-5" />
+            </Link>
+            <Link
+              href="/schedule"
+              className="inline-flex items-center justify-center h-14 px-8 rounded-full border border-white/30 text-white font-semibold hover:bg-white/10 transition-all"
+            >
+              View Schedule
+            </Link>
+          </div>
         </div>
       </section>
 
